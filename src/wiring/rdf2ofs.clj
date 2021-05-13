@@ -114,7 +114,7 @@
     (if (= in "rdf:nil")
       (subs out 1) ;get rid of leading comma 
       (recur (firstObject in :rdf:rest)
-             (str out ",\"" (translate (firstObject in :rdf:first)) "\"")))));recruse into parsing because arguments could be nested
+             (str out ",\"" (translate (firstObject in :rdf:first)) "\"")))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -188,8 +188,8 @@
 
 (defn translateUntyped [predicates]
   "Translate expressions without rdf:type information."
-  (let [restriction (translateRestriction predicates);returns nil if it can't be translated
-        clas (translateClass predicates)
+  (let [restriction (translateRestriction predicates) ;returns nil if no translation is performed
+        clas (translateClass predicates) ;returns nil if no translation is performed
         lis (contains? predicates :rdf:first)]
     (cond
       restriction restriction
@@ -200,7 +200,7 @@
 (defn translate [predicates]
   "Translate RDF to OFS."
   (cond
-    (not (predicateMap? predicates)) predicates ; this happens when stuff is not typed - then we do not get a predicate map .
+    (not (predicateMap? predicates)) predicates ;base case - "ex:A" (which is not typed with rdf:type)
     (typed? predicates) (translateTyped predicates)
     :else (translateUntyped predicates)))
 
@@ -214,7 +214,7 @@
          'owl:someValuesFrom': [{'object': 'ex:bar'}]}
     to
         [\"ObjectSomeValuesFrom\", \"ex:part-of\", \"ex:bar\"]"
-  (def predicates (cs/parse-string predicateMap true)) ; gets a map of 
+  (def predicates (cs/parse-string predicateMap true)) ; parse JSON as map
   ;(println predicates)
   ;(println (firstObject predicates :rdf:type))
   (println (translate predicates)))
