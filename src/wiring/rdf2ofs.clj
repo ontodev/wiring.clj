@@ -36,13 +36,13 @@
 (defn translateUniversalRestriction [predicates]
   "Translate a universal restriction."
   (let [onProperty (firstObject predicates :owl:onProperty)
-        filler (firstObject predicates :owl:allValuesFrom)]
+        filler (translate (firstObject predicates :owl:allValuesFrom))]
     (str "[\"ObjectAllValuesFrom\"," onProperty "," filler "]")))
 
 (defn translateHasValueRestriction [predicates]
   "Translate hasValue restriction."
   (let [onProperty (firstObject predicates :owl:onProperty)
-        filler (firstObject predicates :owl:hasValue)]
+        filler (firstObject predicates :owl:hasValue)];individual
     (str "[\"ObjectHasValue\"," onProperty "," filler "]")))
 
 (defn translateHasSelfRestriction [predicates]
@@ -60,7 +60,7 @@
   "Translate minimum qualified cardinality restriction."
   (let [onProperty (firstObject predicates :owl:onProperty)
         cardinality (getNumber (firstObject predicates :owl:minQualifiedCardinality))
-        filler (firstObject predicates :owl:onClass)];
+        filler (translate (firstObject predicates :owl:onClass))];
     (str "[\"ObjectMinCardinality\"," cardinality "," onProperty "," filler "]")))
 
 (defn translateMaxCardinalityRestriction [predicates]
@@ -73,7 +73,7 @@
   "Translate maximum qualified cardinality restriction."
   (let [onProperty (firstObject predicates :owl:onProperty)
         cardinality (getNumber (firstObject predicates :owl:maxQualifiedCardinality))
-        filler (firstObject predicates :owl:onClass)];
+        filler (translate (firstObject predicates :owl:onClass))];
     (str "[\"ObjectMaxCardinality\"," cardinality "," onProperty "," filler "]")))
 
 (defn translateExactCardinalityRestriction [predicates]
@@ -86,7 +86,7 @@
   "Translate exact qualified cardinality restriction."
   (let [onProperty (firstObject predicates :owl:onProperty)
         cardinality (getNumber (firstObject predicates :owl:qualifiedCardinality))
-        filler (firstObject predicates :owl:onClass)];
+        filler (translate (firstObject predicates :owl:onClass))];
     (str "[\"ObjectExactCardinality\"," cardinality "," onProperty "," filler "]")))
 
 (defn translateRestriction [predicates]
