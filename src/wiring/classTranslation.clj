@@ -6,13 +6,13 @@
             [wiring.propertyTranslation :as property]
             [wiring.spec :as owlspec]))
 
-(declare translate) ;recursive parsing (not tail recursive)  
+(declare translate) ;recursive translation (not tail recursive)  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      RDF
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;NB: you need lists for class expressions
+;;NB: these are lists for class expressions (due to the local recursive call)
 (defn translateList
   "Translate an RDF list."
   [predicates]
@@ -121,8 +121,6 @@
         filler (translate (:owl:onClass predicates))];
     (util/ofsFormat "ObjectExactCardinality" cardinality onProperty filler)))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                   OWL classes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -188,9 +186,6 @@
 ;;             Translation Mechanism
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;TODO datatypes and classes often use the same keys.
-;This can cause errors when translating tentatively
-;so, inferring types involves a more work than just checking for keys
 (defn translateUntyped [predicates]
   "Translate expressions without rdf:type information."
   (let [classAttempt (translateClass predicates);returns nil if no translation is performed

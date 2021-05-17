@@ -5,12 +5,13 @@
             [wiring.util :as util]
             [wiring.spec :as owlspec]))
 
-(declare translate) ;recursive parsing (not tail recursive)  
+(declare translate) ;recursive translation (not tail recursive)  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      RDF
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;NB: these are lists for data types (due to the local recursive call)
 (defn translateList
   "Translate an RDF list."
   [predicates]
@@ -21,7 +22,7 @@
     (if (= in "rdf:nil")
       (apply ofsFormat out)
       (recur (:rdf:rest in)
-             (conj out (translate (:rdf:first in)))))))
+             (conj out (translate (:rdf:first in)))))));recursively translate data types
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                   Data Types
@@ -170,5 +171,4 @@
   (cond
     (string? predicateMap) predicateMap ;base case
     (util/typed? predicateMap) (translateTyped predicateMap)
-    :else (translateUntyped predicateMap)))
-
+    :else (translateUntyped predicateMap))) 
