@@ -135,8 +135,8 @@
     (contains? predicates :owl:minQualifiedCardinality) (translateMinQualifiedCardinalityRestriction predicates)
     (contains? predicates :owl:maxCardinality) (translateMaxCardinalityRestriction predicates)
     (contains? predicates :owl:maxQualifiedCardinality) (translateMaxQualifiedCardinalityRestriction predicates)
-    (contains? predicates :owl:cardinality) (translateMaxCardinalityRestriction predicates)
-    (contains? predicates :owl:qualifiedCardinality) (translateMaxQualifiedCardinalityRestriction predicates)))
+    (contains? predicates :owl:cardinality) (translateExactCardinalityRestriction predicates)
+    (contains? predicates :owl:qualifiedCardinality) (translateExactQualifiedCardinalityRestriction predicates)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      RDF
