@@ -1,7 +1,9 @@
 (ns wiring.core
   (:require [clojure.repl :as repl]
             [wiring.rdf2ofsObject :as rdf2ofsObject]
-            [wiring.rdf2ofs :as rdf2ofs]
+            [wiring.parsing :as p]
+            [wiring.classTranslation :as cl]
+            [wiring.axiomTranslation :as t]
             [wiring.spec :as spec])
   (:gen-class))
 
@@ -19,6 +21,16 @@
   (def testMinCardinality "{\"rdf:type\": [{\"object\": \"owl:Restriction\"}], \"owl:onProperty\": [{\"object\": \"ex:prop\"}], \"owl:minCardinality\": [{\"object\": \"2^^<xsd:nonNegativeInteger\"}]}")
   (def testMinQualifiedCardinality "{\"rdf:type\": [{\"object\": \"owl:Restriction\"}], \"owl:onProperty\": [{\"object\": \"ex:prop\"}], \"owl:minQualifiedCardinality\": [{\"object\": \"2^^<xmls:nonNegativeInteger\"}], \"owl:onClass\": [{\"object\": \"ex:B\"}]}")
 
+  ;;this is created MANUALLY
+  (def testInverse "{\"rdf:type\":[{\"object\":\"owl:Restriction\"}],\"owl:onProperty\":[{\"object\":{\"owl:inverseOf\":[{\"object\":\"ex:part-of\"}]}}],\"owl:someValuesFrom\":[{\"object\":\"ex:bar\"}]}")
+
+
+  (def subclass "{\"subject\": \"ex:A\", \"predicate\": \"rdfs:subClassOf\", \"object\": {\"rdf:type\": [{\"object\": \"owl:Restriction\"}], \"owl:onProperty\": [{\"object\": \"ex:prop\"}], \"owl:cardinality\": [{\"object\": \"2^^<xmls:nonNegativeInteger\"}]}}")
+
+  ;"{"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:prop"}], "owl:someValuesFrom": [{"object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:prop"}], "owl:someValuesFrom": [{"object": "ex:C"}]}}]}
+
+  ;{"rdf:type":[{"object":"owl:Restriction"}],"owl:onProperty":[{"object": {"owl:inverseOf":[{"object":"ex:part-of"}]}}],"owl:someValuesFrom":[{"object":"ex:bar"}]}
+
   (println "Test Existential: ")
   (rdf2ofsObject/predicateMap2OFS testExistential)
   (println "")
@@ -31,10 +43,6 @@
   (rdf2ofsObject/predicateMap2OFS testMinQualifiedCardinality)
   (println "")
 
-  ;(println "Test Exact Cardinlaity ")
-  ;(rdf2ofs/predicateMap2OFS testExactCardinality)
-  ;(println "")
-
   (println "Test Nesting ")
   (rdf2ofsObject/predicateMap2OFS testNestingIntersection)
   (println "")
@@ -42,12 +50,16 @@
   (println "Test Nesting Restrictions")
   (rdf2ofsObject/predicateMap2OFS testNestingRestrictions)
   (println "")
-  
+
   (println "Test spec")
   (spec/tests testExistential)
   (println "")
-  
-  (println "Test spec2")
-  (println (rdf2ofs/translate (rdf2ofs/parse testExistential)))
+
+  (println "Test Subclass ")
+  (println (t/translate (p/parse subclass)))
   (println "")
+
+  (println "Test Nesting ")
+  (println (cl/translate (p/parse testNestingIntersection)))
+  (println "") 
   )
