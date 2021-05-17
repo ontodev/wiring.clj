@@ -28,6 +28,8 @@
 (defn translateInverseOf
   "Translate the inverse of a property"  
   [predicates]
+  {:pre [(spec/valid? ::owlspec/inverseOf predicates)]
+   :post [(spec/valid? string? %)]}
   (let [property (:owl:inverseOf predicates)]
     (ofsFormat "ObjectInverseOf" property))) 
 

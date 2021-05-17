@@ -15,6 +15,9 @@
 (spec/def ::owl:onClass  (spec/or :namedClass string?
                                   :classConstructor ::map))
 
+(spec/def ::owl:inverseOf (spec/or :namedProperty string?
+                                   :propertyConstructor ::map))
+
 (spec/def ::owl:someValuesFrom (spec/or :namedClass string?
                                         :classConstructor ::map))
 
@@ -94,6 +97,8 @@
 
 (spec/def ::oneOf (spec/keys :req-un [::owl:oneOf]
                              :opt-un [::rdf:type]))
+
+(spec/def ::inverseOf (spec/keys :req-un [::owl:inverseOf]))
 
 (spec/def ::classComplement (spec/keys :req-un [::owl:complementOf]
                                        :opt-un [::rdf:type]))
