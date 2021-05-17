@@ -18,11 +18,17 @@
     (util/ofsFormat "SubClassOf" subclass superclass)))
 
 (defn translateDisjointUnionOf
-  "Translate a Disjoint Union Of"
+  "Translate a DisjointUnion axiom"
   [predicates]
   (let [subject (classTranslation/translate (:subject predicates))
         arguments (classTranslation/translate (:object predicates))]
     (util/ofsFormat "DisjointUnion" subject arguments)))
+
+(defn translateAllDisjointClasses
+  "Translate DisjointClasses axiom"
+  [predicates]
+  (let [arguments (classTranslation/translate (:object predicates))]
+    (util/ofsFormat "DisjointClasses" arguments)))
 
 (defn translate
   "Translate predicate map to OFS."
@@ -30,7 +36,7 @@
   (let [p (:predicate predicateMap)];
     (case p
     "rdfs:subClassOf" (translateSubclassOf predicateMap)
-    "owl:disjointUnionOf" (translateDisjointUnionOf predicateMap))))
-    ;TODO
+    "owl:disjointUnionOf" (translateDisjointUnionOf predicateMap)
+    "owl:members"  (translateAllDisjointClasses predicateMap))))
+    ;TODO 
     ;equivalence classes (here we would need to parse multiple triples?)
-    ;disjointclasses (seems broken in gizmos)
