@@ -6,6 +6,7 @@
             [wiring.spec :as owlspec]))
 
 ;TODO handle single quotation marks {'subject': 'ex:A', 'predicate': 'rdf:type', 'object': 'owl:Class'} 
+;TODO: handle quotations around thick map after 'object' 
 
 (defn parse
   "Parse JSON predicate map."
