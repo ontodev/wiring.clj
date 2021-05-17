@@ -36,9 +36,9 @@
 
 (spec/def ::owl:maxQualifiedCardinality (spec/or :cardinality string?)) ;this is a number but encoded as '"n"^^xsd:nonNegativeInteger.
 
-(spec/def ::owl:exactCardinality (spec/or :cardinality string?)) ;this is a number but encoded as '"n"^^xsd:nonNegativeInteger.
+(spec/def ::owl:cardinality (spec/or :cardinality string?))
 
-(spec/def ::owl:exactQualifiedCardinality (spec/or :cardinality string?)) ;this is a number but encoded as '"n"^^xsd:nonNegativeInteger.
+(spec/def ::owl:qualifiedCardinality (spec/or :cardinality string?)) ;this is a number but encoded as '"n"^^xsd:nonNegativeInteger.
 
 (spec/def ::rdf:type #{"owl:Restriction", "rdfs:Datatype", "owl:Class"})
 
@@ -78,10 +78,10 @@
 (spec/def ::maxQualifiedCardinality (spec/keys :req-un [::owl:onProperty ::owl:maxQualifiedCardinality ::owl:onClass]
                                                :opt-un [::rdf:type]))
 
-(spec/def ::exactCardinality (spec/keys :req-un [::owl:onProperty ::owl:exactCardinality]
+(spec/def ::exactCardinality (spec/keys :req-un [::owl:onProperty ::owl:cardinality]
                                         :opt-un [::rdf:type]))
 
-(spec/def ::exactQualifiedCardinality (spec/keys :req-un [::owl:onProperty ::owl:exactQualifiedCardinality ::owl:onClass]
+(spec/def ::exactQualifiedCardinality (spec/keys :req-un [::owl:onProperty ::owl:qualifiedCardinality ::owl:onClass]
                                                  :opt-un [::rdf:type]))
 
 (spec/def ::restriction (spec/or :existential ::existential
