@@ -30,7 +30,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/inverseOf predicates)]
    :post [(spec/valid? string? %)]}
-  (let [property (:owl:inverseOf predicates)]
+  (let [property (translate (:owl:inverseOf predicates))];you can nest inverses..
     (ofsFormat "ObjectInverseOf" property))) 
 
 (defn translateExistentialRestriction
@@ -197,6 +197,129 @@
     (contains? predicates :owl:unionOf) (translateUnion predicates)
     (contains? predicates :owl:complementOf) (translateComplement predicates)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                   Data Types
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn translateDatatypeIntersection
+  "Translate datatype intersection"
+  [predicates]
+  (let [arguments (translate (:owl:intersectionOf predicates))] 
+    (ofsFormat "DataIntersectionOf" arguments))) 
+
+(defn translateDatatypeUnion
+  "Translate datatype union"
+  [predicates]
+  (let [arguments (translate (:owl:unionOf predicates))] 
+    (ofsFormat "DataUnionOf" arguments))) 
+
+(defn translateDatatypeComplement
+  "Translate datatype complement"
+  [predicates]
+  (let [dataRange (translate (:owl:datatypeComplementOf predicates))] 
+    (ofsFormat "DataComplementOf" dataRange))) 
+
+(defn translateDatatypeOneOf
+  "Translate datatype one of"
+  [predicates]
+  (let [arguments (translate (:owl:oneOf predicates))] 
+    (ofsFormat "DataOneOf" arguments))) 
+
+;;ASSUMPTION: the arguments of the list are strings 
+(defn translateDatatypeRestriction
+  "Translate datatype restriction"
+  [predicates]
+  (let [datatype (translate (:owl:onDatatype predicates))
+        arguments (translate (:owl:withRestrictions predicates))] 
+    (ofsFormat "DatatypeRestriction" datatype arguments))) 
+
+(defn translateDatatypeExistential
+  "Translate datatype existential"
+  [predicates]
+  (let [property (translate (:owl:onProperty predicates));this can be a list
+        dataRange (translate (:owl:someValuesFrom predicates))] 
+    (ofsFormat "DataSomeValuesFrom" property dataRange))) 
+
+(defn translateDatatypeUniversal
+  "Translate datatype universal"
+  [predicates]
+  (let [property (translate (:owl:onProperty predicates));this can be a list
+        dataRange (translate (:owl:allValuesFrom predicates))] 
+    (ofsFormat "DataAllValuesFrom" property dataRange))) 
+
+(defn translateDatatypeHasValue
+  "Translate datatype has value"
+  [predicates]
+  (let [property (translate (:owl:onProperty predicates));this can be a list
+        literal (translate (:owl:hasValue predicates))] 
+    (ofsFormat "DataHasValue" property literal)))
+
+(defn translateDatatypeMinCardinality
+  "Translate datatype min cardinality"
+  [predicates]
+  (let [cardinality (getNumber (:owl:minCardinality predicates))
+        property (translate (:owl:onProperty predicates))]
+    (ofsFormat "DataMinCardinality" cardinality property)))
+
+(defn translateDatatypeMinQualifiedCardinality
+  "Translate datatype min qualified cardinality"
+  [predicates]
+  (let [cardinality (getNumber (:owl:minQualifiedCardinality predicates))
+        property (translate (:owl:onProperty predicates))
+        dataRange (translate (:owl:onDataRange predicates))]
+    (ofsFormat "DataMinCardinality" cardinality property dataRange)))
+
+(defn translateDatatypeMaxCardinality
+  "Translate datatype max cardinality"
+  [predicates]
+  (let [cardinality (getNumber (:owl:maxCardinality predicates))
+        property (translate (:owl:onProperty predicates))]
+    (ofsFormat "DataMaxCardinality" cardinality property)))
+
+(defn translateDatatypeMaxQualifiedCardinality
+  "Translate datatype max qualified cardinality"
+  [predicates]
+  (let [cardinality (getNumber (:owl:maxQualifiedCardinality predicates))
+        property (translate (:owl:onProperty predicates))
+        dataRange (translate (:owl:onDataRange predicates))]
+    (ofsFormat "DataMaxCardinality" cardinality property dataRange)))
+
+(defn translateDatatypeExactCardinality
+  "Translate datatype exact cardinality"
+  [predicates]
+  (let [cardinality (getNumber (:owl:cardinality predicates))
+        property (translate (:owl:onProperty predicates))]
+    (ofsFormat "DataExactCardinality" cardinality property)))
+
+(defn translateDatatypeExactQualifiedCardinality
+  "Translate datatype exact qualified cardinality"
+  [predicates]
+  (let [cardinality (getNumber (:owl:qualifiedCardinality predicates))
+        property (translate (:owl:onProperty predicates))
+        dataRange (translate (:owl:onDataRange predicates))]
+    (ofsFormat "DataExactCardinality" cardinality property dataRange)))
+
+(defn translateDatatype [predicates]
+  "Translate an RDFS datatype expressions with an rdf:type."
+  (cond
+    (contains? predicates :owl:intersectionOf) (translateDatatypeIntersection predicates)
+    (contains? predicates :owl:unionOf) (translateDatatypeUnion predicates)
+    (contains? predicates :owl:datatypeComplementOf) (translateDatatypeComplement predicates)
+    (contains? predicates :owl:withRestrictions) (translateDatatypeRestriction predicates)
+    (contains? predicates :owl:someValuesFrom) (translateDatatypeExistential predicates) 
+    (contains? predicates :owl:allValuesFrom) (translateDatatypeUniversal predicates) 
+    (contains? predicates :owl:hasValue) (translateDatatypeHasValue predicates) 
+    (contains? predicates :owl:minCardinality) (translateDatatypeMinCardinality predicates) 
+    (contains? predicates :owl:minQualifiedCardinality) (translateDatatypeMinQualifiedCardinality predicates) 
+    (contains? predicates :owl:maxCardinality) (translateDatatypeMaxCardinality predicates) 
+    (contains? predicates :owl:maxQualifiedCardinality) (translateDatatypeMaxQualifiedCardinality predicates) 
+    (contains? predicates :owl:cardinality) (translateDatatypeExactCardinality predicates) 
+    (contains? predicates :owl:qualifiedCardinality) (translateDatatypeExactQualifiedCardinality predicates) 
+    (contains? predicates :owl:oneOf) (translateDatatypeOneOf predicates)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                   Translation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn parse
   "Parse JSON predicate map."
   [predicateMap]
@@ -210,10 +333,14 @@
 (defn typed? [predicates]
   (contains? predicates :rdf:type))
 
+;TODO datatypes and classes often use the same keys.
+;This can cause errors when translating tentatively
+;so, inferring types involves a more work than just checking for keys
 (defn translateUntyped [predicates]
   "Translate expressions without rdf:type information."
   (let [restriction (translateRestriction predicates) ;returns nil if no translation is performed
         clas (translateClass predicates) ;returns nil if no translation is performed
+        datatype (translateDatatype predicates)
         lis (contains? predicates :rdf:first)
         inverseProperty (contains? predicates :owl:inverseOf)]
 
@@ -230,6 +357,7 @@
     (case entrypoint
       "owl:Restriction" (translateRestriction predicates)
       "owl:Class" (translateClass predicates)
+      "rdfs:Datatype" (translateDatatype predicates)
       ;TODO
       ;rdfs:Datatype
       ;owl:AllDisjointProperties
