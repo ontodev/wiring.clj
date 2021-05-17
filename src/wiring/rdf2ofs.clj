@@ -29,15 +29,14 @@
   "Translate the inverse of a property"  
   [predicates]
   (let [property (:owl:inverseOf predicates)]
-    (str "[\"ObjectInverseOf\"," "\"" property "\"" "]")))
-
+    (ofsFormat "ObjectInverseOf" property))) 
 
 (defn translateExistentialRestriction
   "Translate an existential restriction."
   [predicates]
   {:pre [(spec/valid? ::owlspec/existential predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)
+  (let [onProperty (translate (:owl:onProperty predicates))
         filler (translate (:owl:someValuesFrom predicates))]
     (ofsFormat "ObjectSomeValuesFrom" onProperty filler)))
 
@@ -46,7 +45,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/universal predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)
+  (let [onProperty (translate (:owl:onProperty predicates))
         filler (translate (:owl:allValuesFrom predicates))]
     (ofsFormat "ObjectAllValuesFrom" onProperty filler)))
 
@@ -55,7 +54,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/hasValue predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)
+  (let [onProperty (translate (:owl:onProperty predicates))
         filler (:owl:hasValue predicates)];individual
     (ofsFormat "ObjectHasValue" onProperty filler)))
 
@@ -64,7 +63,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/hasSelf predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)]
+  (let [onProperty (translate (:owl:onProperty predicates))]
     (ofsFormat "ObjectHasSelf" onProperty)))
 
 (defn translateMinCardinalityRestriction
@@ -72,7 +71,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/minCardinality predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)
+  (let [onProperty (translate (:owl:onProperty predicates))
         cardinality (getNumber (:owl:minCardinality predicates))];
     (ofsFormat "ObjectMinCardinality" cardinality onProperty)))
 
@@ -81,7 +80,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/minQualifiedCardinality predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)
+  (let [onProperty (translate (:owl:onProperty predicates))
         cardinality (getNumber (:owl:minQualifiedCardinality predicates))
         filler (translate (:owl:onClass predicates))];
     (ofsFormat "ObjectMinCardinality" cardinality onProperty filler)))
@@ -91,7 +90,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/maxCardinality predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)
+  (let [onProperty (translate (:owl:onProperty predicates))
         cardinality (getNumber (:owl:maxCardinality predicates))];
     (ofsFormat "ObjectMaxCardinality" cardinality onProperty)))
 
@@ -100,7 +99,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/maxQualifiedCardinality predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)
+  (let [onProperty (translate (:owl:onProperty predicates))
         cardinality (getNumber (:owl:maxQualifiedCardinality predicates))
         filler (translate (:owl:onClass predicates))];
     (ofsFormat "ObjectMaxCardinality" cardinality onProperty filler)))
@@ -110,7 +109,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/exactCardinality predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)
+  (let [onProperty (translate (:owl:onProperty predicates))
         cardinality (getNumber (:owl:cardinality predicates))];
     (ofsFormat "ObjectExactCardinality" cardinality onProperty)))
 
@@ -119,7 +118,7 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/exactQualifiedCardinality predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (:owl:onProperty predicates)
+  (let [onProperty (translate (:owl:onProperty predicates))
         cardinality (getNumber (:owl:qualifiedCardinality predicates))
         filler (translate (:owl:onClass predicates))];
     (ofsFormat "ObjectExactCardinality" cardinality onProperty filler)))
@@ -213,11 +212,14 @@
   "Translate expressions without rdf:type information."
   (let [restriction (translateRestriction predicates) ;returns nil if no translation is performed
         clas (translateClass predicates) ;returns nil if no translation is performed
-        lis (contains? predicates :rdf:first)]
+        lis (contains? predicates :rdf:first)
+        inverseProperty (contains? predicates :owl:inverseOf)]
+
     (cond
       restriction restriction
       clas clas
       lis (translateList predicates)
+      inverseProperty (translateInverseOf predicates) ; this is the only property constructor
       :else "")))
 
 (defn translateTyped [predicates]
