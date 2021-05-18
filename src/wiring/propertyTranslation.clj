@@ -7,6 +7,19 @@
 
 (declare translate) ;recursive parsing (not tail recursive)  
 
+;;NB: these are lists for property expressions (due to the local recursive call)
+(defn translateList
+  "Translate an RDF list."
+  [predicates]
+  {:pre [(spec/valid? ::owlspec/list predicates)]
+   :post [(spec/valid? string? %)]}
+  (loop [in predicates
+         out []]
+    (if (= in "rdf:nil")
+      (apply util/ofsFormat out)
+      (recur (:rdf:rest in)
+             (conj out (translate (:rdf:first in)))))));recursively translate property expressions
+
 (defn translateInverseOf
   "Translate the inverse of a property"  
   [predicates]
