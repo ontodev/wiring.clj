@@ -26,7 +26,8 @@
 
 
   (def subclass "{\"subject\": \"ex:A\", \"predicate\": \"rdfs:subClassOf\", \"object\": {\"rdf:type\": [{\"object\": \"owl:Restriction\"}], \"owl:onProperty\": [{\"object\": \"ex:prop\"}], \"owl:cardinality\": [{\"object\": \"2^^<xmls:nonNegativeInteger\"}]}}")
-  (def disjointclasses "{\"subject\": \"_:genid4\", \"predicate\": \"owl:members\", \"object\": {\"rdf:first\": [{\"object\": \"ex:A\"}], \"rdf:rest\": [{\"object\": {\"rdf:first\": [{\"object\": \"ex:D\"}], \"rdf:rest\": [{\"object\": {\"rdf:first\": [{\"object\": \"ex:E\"}], \"rdf:rest\": [{\"object\": {\"rdf:first\": [{\"object\": \"ex:F\"}], \"rdf:rest\": [{\"object\": \"rdf:nil\"}]}}]}}]}}]}}")
+
+  (def disjointclasses "{\"subject\": \"_:genid4\", \"predicate\": \"owl:AllDisjointClasses\", \"object\": {\"rdf:first\": [{\"object\": \"ex:A\"}], \"rdf:rest\": [{\"object\": {\"rdf:first\": [{\"object\": \"ex:D\"}], \"rdf:rest\": [{\"object\": {\"rdf:first\": [{\"object\": \"ex:E\"}], \"rdf:rest\": [{\"object\": {\"rdf:first\": [{\"object\": \"ex:F\"}], \"rdf:rest\": [{\"object\": \"rdf:nil\"}]}}]}}]}}]}}")
 
 
   ;"{"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:prop"}], "owl:someValuesFrom": [{"object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:prop"}], "owl:someValuesFrom": [{"object": "ex:C"}]}}]}

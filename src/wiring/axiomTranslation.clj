@@ -122,6 +122,8 @@
   "Translate predicate map to OFS."
   [predicateMap]
   (let [p (:predicate predicateMap)];
+    (println predicateMap)
+    (println p) 
     (case p
     "rdfs:subClassOf" (translateSubclassOf predicateMap)
     "owl:disjointUnionOf" (translateDisjointUnionOf predicateMap)
@@ -132,7 +134,6 @@
     "rdfs:range" (translateRange predicateMap)
     "owl:inverseOf" (translateInverseOf predicateMap)
     "rdf:type" (translateType predicateMap)
-
-    "owl:members"  (translateAllDisjointClasses predicateMap))));;NOTE this is ambiguous -  AllDisjointProperties use the same thing
+    "owl:AllDisjointClasses" (translateAllDisjointClasses predicateMap))))
     ;TODO 
     ;equivalence classes (here we would need to parse multiple triples?)
