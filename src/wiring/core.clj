@@ -52,14 +52,6 @@
   (println (t/translate (p/parse equivalentClasses)))
   (println "")
 
-  (println "Test equivalent classes 2 ")
-  (println (t/translate (p/parse equivalentClasses2)))
-  (println "")
-
-  (println "Test equivalent classes 3 ")
-  (println (t/translate (p/parse maxCard)))
-  (println "")
-
   (println "Test Nesting ")
   (println (cl/translate (p/parse testNestingIntersection)))
   (println ""))
