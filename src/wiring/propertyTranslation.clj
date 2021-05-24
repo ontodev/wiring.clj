@@ -32,5 +32,5 @@
   "Translate property map containing a property expression to OFS."
   [predicateMap]
   (if (string? predicateMap)
-    predicateMap ;base case 
+    (str "\"" predicateMap "\"") ;base case 
     (translateInverseOf predicateMap)));recursion (there is no rdf:type to check for)

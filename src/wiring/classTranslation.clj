@@ -21,7 +21,7 @@
   (loop [in predicates
          out []]
     (if (= in "rdf:nil")
-      (apply util/ofsFormat out)
+      (apply util/ofsFormatNoBrackets out)
       (recur (:rdf:rest in)
              (conj out (translate (:rdf:first in)))))));recursively translate class expressions
 
@@ -208,6 +208,6 @@
   "Translate predicate map to OFS."
   [predicateMap]
   (cond
-    (string? predicateMap) predicateMap ;base case
+    (string? predicateMap) (str "\"" predicateMap "\"") ;base case
     (util/typed? predicateMap) (translateTyped predicateMap)
     :else (translateUntyped predicateMap)))

@@ -169,6 +169,6 @@
   "Translate predicate map to OFS."
   [predicateMap]
   (cond
-    (string? predicateMap) predicateMap ;base case
+    (string? predicateMap) (str "\"" predicateMap "\"") ;base case
     (util/typed? predicateMap) (translateTyped predicateMap)
     :else (translateUntyped predicateMap))) 
