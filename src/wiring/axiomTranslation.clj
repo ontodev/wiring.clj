@@ -31,8 +31,18 @@
 (defn translateAllDisjointClasses
   "Translate DisjointClasses axiom"
   [predicates]
+  ;(let [arguments (classTranslation/translate (:owl:members (:object predicates)))]
   (let [arguments (classTranslation/translate (:object predicates))]
     (util/ofsFormat "DisjointClasses" arguments)))
+
+(defn translateEquivalentClasses
+  "Translate Equivalent Class axiom"
+  [predicates]
+  (let [subject (classTranslation/translate (:subject predicates))
+        arguments (classTranslation/translate (:object predicates))] 
+    (if (map? (:object predicates))
+              (util/ofsFormat "EquivalentClasses" arguments)
+              (util/ofsFormat "EquivalentClasses" subject arguments))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;               Object Property Axioms
@@ -134,6 +144,7 @@
     "rdfs:range" (translateRange predicateMap)
     "owl:inverseOf" (translateInverseOf predicateMap)
     "rdf:type" (translateType predicateMap)
+    "owl:equivalentClass" (translateEquivalentClasses predicateMap);TODO case for normal axioms
     "owl:AllDisjointClasses" (translateAllDisjointClasses predicateMap))))
     ;TODO 
     ;equivalence classes (here we would need to parse multiple triples?)
