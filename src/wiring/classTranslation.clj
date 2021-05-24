@@ -180,6 +180,7 @@
   (cond
     (contains? predicates :owl:intersectionOf) (translateIntersection predicates)
     (contains? predicates :owl:unionOf) (translateUnion predicates)
+    (contains? predicates :owl:oneOf) (translateOneOf predicates)
     (contains? predicates :owl:complementOf) (translateComplement predicates)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
