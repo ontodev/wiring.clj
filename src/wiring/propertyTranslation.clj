@@ -21,12 +21,12 @@
              (conj out (translate (:rdf:first in)))))));recursively translate property expressions
 
 (defn translateInverseOf
-  "Translate the inverse of a property"  
+  "Translate the inverse of a property"
   [predicates]
   {:pre [(spec/valid? ::owlspec/inverseOf predicates)]
    :post [(spec/valid? string? %)]}
   (let [property (translate (:owl:inverseOf predicates))];you can nest inverses..
-    (util/ofsFormat "ObjectInverseOf" property))) 
+    (util/ofsFormat "ObjectInverseOf" property)))
 
 (defn translate
   "Translate property map containing a property expression to OFS."

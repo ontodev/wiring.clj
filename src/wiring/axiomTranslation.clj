@@ -14,8 +14,8 @@
 ;;             Class Expression Axioms
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn translateSubclassOf 
-  "Translate a SubClassOf axiom"   
+(defn translateSubclassOf
+  "Translate a SubClassOf axiom"
   [predicates]
   (let [subclass (classTranslation/translate (:subject predicates))
         superclass (classTranslation/translate (:object predicates))]
@@ -40,7 +40,7 @@
   [predicates]
   (let [subject (classTranslation/translate (:subject predicates))
         arguments (classTranslation/translate (:object predicates))
-        nAry (contains? (:object predicates) :rdf:first)] 
+        nAry (contains? (:object predicates) :rdf:first)]
     (if nAry
       (util/ofsFormat "EquivalentClasses" arguments);EquivalentClasses(e1, ..., en)
       (util/ofsFormat "EquivalentClasses" subject arguments))));EquivalentClasses(e1,e2) 
@@ -93,10 +93,10 @@
 
 ;;NB these things all follow the same structure - should they be refactored into a single function?
 (defn translateThinPropertyAxiom
-"Translate thin property axioms" 
-  [predicates description] 
+  "Translate thin property axioms"
+  [predicates description]
   (let [property (propertyTranslation/translate (:subject predicates))]
-    (util/ofsFormat description property))) 
+    (util/ofsFormat description property)))
 
 ;;hardcoding things
 (defn translateFunctionalProperty
@@ -116,18 +116,18 @@
 ;;                    Translation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn translateType 
+
+(defn translateType
   "Translate rdf:type for axioms"
   [predicateMap]
   (let [object (:object predicateMap)]
     (if (string? object)
-      "Thin triple" 
+      "Thin triple"
       (case object
         "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
         "owl:inverseFunctionalProperty" (translateInverseFunctionalProperty predicateMap)
         "owl:ReflexiveProperty" (translateThinPropertyAxiom predicateMap "ReflexiveObjectProperty")
         "";can't translate
-
         ))))
 
 (defn translate

@@ -31,54 +31,54 @@
 (defn translateDatatypeIntersection
   "Translate datatype intersection"
   [predicates]
-  (let [arguments (translate (:owl:intersectionOf predicates))] 
-    (ofsFormat "DataIntersectionOf" arguments))) 
+  (let [arguments (translate (:owl:intersectionOf predicates))]
+    (ofsFormat "DataIntersectionOf" arguments)))
 
 (defn translateDatatypeUnion
   "Translate datatype union"
   [predicates]
-  (let [arguments (translate (:owl:unionOf predicates))] 
-    (ofsFormat "DataUnionOf" arguments))) 
+  (let [arguments (translate (:owl:unionOf predicates))]
+    (ofsFormat "DataUnionOf" arguments)))
 
 (defn translateDatatypeComplement
   "Translate datatype complement"
   [predicates]
-  (let [dataRange (translate (:owl:datatypeComplementOf predicates))] 
-    (ofsFormat "DataComplementOf" dataRange))) 
+  (let [dataRange (translate (:owl:datatypeComplementOf predicates))]
+    (ofsFormat "DataComplementOf" dataRange)))
 
 (defn translateDatatypeOneOf
   "Translate datatype one of"
   [predicates]
-  (let [arguments (translate (:owl:oneOf predicates))] 
-    (ofsFormat "DataOneOf" arguments))) 
+  (let [arguments (translate (:owl:oneOf predicates))]
+    (ofsFormat "DataOneOf" arguments)))
 
 ;;ASSUMPTION: the arguments of the list are strings 
 (defn translateDatatypeRestriction
   "Translate datatype restriction"
   [predicates]
   (let [datatype (translate (:owl:onDatatype predicates))
-        arguments (translate (:owl:withRestrictions predicates))] 
-    (ofsFormat "DatatypeRestriction" datatype arguments))) 
+        arguments (translate (:owl:withRestrictions predicates))]
+    (ofsFormat "DatatypeRestriction" datatype arguments)))
 
 (defn translateDatatypeExistential
   "Translate datatype existential"
   [predicates]
   (let [property (translate (:owl:onProperty predicates));this can be a list
-        dataRange (translate (:owl:someValuesFrom predicates))] 
-    (ofsFormat "DataSomeValuesFrom" property dataRange))) 
+        dataRange (translate (:owl:someValuesFrom predicates))]
+    (ofsFormat "DataSomeValuesFrom" property dataRange)))
 
 (defn translateDatatypeUniversal
   "Translate datatype universal"
   [predicates]
   (let [property (translate (:owl:onProperty predicates));this can be a list
-        dataRange (translate (:owl:allValuesFrom predicates))] 
-    (ofsFormat "DataAllValuesFrom" property dataRange))) 
+        dataRange (translate (:owl:allValuesFrom predicates))]
+    (ofsFormat "DataAllValuesFrom" property dataRange)))
 
 (defn translateDatatypeHasValue
   "Translate datatype has value"
   [predicates]
   (let [property (translate (:owl:onProperty predicates));this can be a list
-        literal (translate (:owl:hasValue predicates))] 
+        literal (translate (:owl:hasValue predicates))]
     (ofsFormat "DataHasValue" property literal)))
 
 (defn translateDatatypeMinCardinality
@@ -128,14 +128,14 @@
 
 (def translateRestriction [predicates]
   (cond
-    (contains? predicates :owl:someValuesFrom) (translateDatatypeExistential predicates) 
-    (contains? predicates :owl:allValuesFrom) (translateDatatypeUniversal predicates) 
-    (contains? predicates :owl:hasValue) (translateDatatypeHasValue predicates) 
-    (contains? predicates :owl:minCardinality) (translateDatatypeMinCardinality predicates) 
-    (contains? predicates :owl:minQualifiedCardinality) (translateDatatypeMinQualifiedCardinality predicates) 
-    (contains? predicates :owl:maxCardinality) (translateDatatypeMaxCardinality predicates) 
-    (contains? predicates :owl:maxQualifiedCardinality) (translateDatatypeMaxQualifiedCardinality predicates) 
-    (contains? predicates :owl:cardinality) (translateDatatypeExactCardinality predicates) 
+    (contains? predicates :owl:someValuesFrom) (translateDatatypeExistential predicates)
+    (contains? predicates :owl:allValuesFrom) (translateDatatypeUniversal predicates)
+    (contains? predicates :owl:hasValue) (translateDatatypeHasValue predicates)
+    (contains? predicates :owl:minCardinality) (translateDatatypeMinCardinality predicates)
+    (contains? predicates :owl:minQualifiedCardinality) (translateDatatypeMinQualifiedCardinality predicates)
+    (contains? predicates :owl:maxCardinality) (translateDatatypeMaxCardinality predicates)
+    (contains? predicates :owl:maxQualifiedCardinality) (translateDatatypeMaxQualifiedCardinality predicates)
+    (contains? predicates :owl:cardinality) (translateDatatypeExactCardinality predicates)
     (contains? predicates :owl:qualifiedCardinality) (translateDatatypeExactQualifiedCardinality predicates)))
 
 (defn translateDatatype [predicates]
@@ -143,14 +143,14 @@
   (cond
     (contains? predicates :owl:intersectionOf) (translateDatatypeIntersection predicates)
     (contains? predicates :owl:unionOf) (translateDatatypeUnion predicates)
-    (contains? predicates :owl:datatypeComplementOf) (translateDatatypeComplement predicates) 
-    (contains? predicates :owl:withRestrictions) (translateDatatypeRestriction predicates) 
+    (contains? predicates :owl:datatypeComplementOf) (translateDatatypeComplement predicates)
+    (contains? predicates :owl:withRestrictions) (translateDatatypeRestriction predicates)
     (contains? predicates :owl:oneOf) (translateDatatypeOneOf predicates)))
 
 (defn translateUntyped [predicates]
   "Translate expressions without rdf:type information."
   (let [datatypeAttempt (translateDatatype predicates);returns nil if no translation is performed
-        restrictionAttempt (translateRestriction predicates) 
+        restrictionAttempt (translateRestriction predicates)
         lis (contains? predicates :rdf:first)]
     (cond
       datatypeAttempt datatypeAttempt
@@ -171,4 +171,4 @@
   (cond
     (string? predicateMap) (str "\"" predicateMap "\"") ;base case
     (util/typed? predicateMap) (translateTyped predicateMap)
-    :else (translateUntyped predicateMap))) 
+    :else (translateUntyped predicateMap)))

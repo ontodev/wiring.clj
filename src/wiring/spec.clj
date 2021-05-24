@@ -53,7 +53,7 @@
 (spec/def ::owl:oneOf ::map); and this map needs to be a list
 
 (spec/def ::owl:complementOf (spec/or :namedClass string?
-                                       :classConstructor ::map))
+                                      :classConstructor ::map))
 
 (spec/def ::existential (spec/keys :req-un [::owl:onProperty ::owl:someValuesFrom]
                                    :opt-un [::rdf:type]))

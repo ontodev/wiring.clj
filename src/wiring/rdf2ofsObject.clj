@@ -121,6 +121,7 @@
 ;;                   OWL classes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 (defn translateIntersection [predicates]
   "Translate an intersection."
   (let [arguments (translate (firstObject predicates :owl:intersectionOf))]

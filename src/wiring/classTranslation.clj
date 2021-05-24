@@ -162,6 +162,7 @@
 ;;             Translation by Case
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 (defn translateRestriction [predicates]
   (cond
     (contains? predicates :owl:someValuesFrom) (translateExistentialRestriction predicates)
@@ -190,7 +191,7 @@
 (defn translateUntyped [predicates]
   "Translate expressions without rdf:type information."
   (let [classAttempt (translateClass predicates);returns nil if no translation is performed
-        restrictionAttempt (translateRestriction predicates) 
+        restrictionAttempt (translateRestriction predicates)
         lis (contains? predicates :rdf:first)]
     (cond
       classAttempt classAttempt

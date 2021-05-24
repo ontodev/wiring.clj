@@ -15,11 +15,11 @@
   "Serialises a list of entities into a valid OFN-S expression."
   [& args]
   (let [s (seq args)
-        firstOperator (str "\"" (first s) "\"") 
+        firstOperator (str "\"" (first s) "\"")
         arguments (interpose, "," (rest s))
         string (apply str arguments)
         brackets (str "[" firstOperator "," string "]")]
-    brackets)) 
+    brackets))
 
 ;this is used for lists because we don't interpret them as expressions
 (defn ofsFormatNoBrackets
@@ -28,4 +28,4 @@
   (let [s (seq args)
         commas (interpose, "," s)
         string (apply str commas)]
-    string)) 
+    string))
