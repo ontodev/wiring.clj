@@ -31,18 +31,19 @@
 (defn translateAllDisjointClasses
   "Translate DisjointClasses axiom"
   [predicates]
-  ;(let [arguments (classTranslation/translate (:owl:members (:object predicates)))]
-  (let [arguments (classTranslation/translate (:object predicates))]
+  (let [arguments (classTranslation/translate (:owl:members (:object predicates)))]
+  ;(let [arguments (classTranslation/translate (:object predicates))]
     (util/ofsFormat "DisjointClasses" arguments)))
 
 (defn translateEquivalentClasses
   "Translate Equivalent Class axiom"
   [predicates]
   (let [subject (classTranslation/translate (:subject predicates))
-        arguments (classTranslation/translate (:object predicates))] ;this can be a class or a list
-    (if (map? (:object predicates))
-              (util/ofsFormat "EquivalentClasses" arguments);EquivalentClasses(e1, ..., en)
-              (util/ofsFormat "EquivalentClasses" subject arguments))));EquivalentClasses(e1,e2) 
+        arguments (classTranslation/translate (:object predicates))
+        nAry (contains? (:object predicates) :rdf:first)] 
+    (if nAry
+      (util/ofsFormat "EquivalentClasses" arguments);EquivalentClasses(e1, ..., en)
+      (util/ofsFormat "EquivalentClasses" subject arguments))));EquivalentClasses(e1,e2) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;               Object Property Axioms
@@ -118,33 +119,40 @@
 (defn translateType 
   "Translate rdf:type for axioms"
   [predicateMap]
-  (let [t (:object predicateMap)]
-    (case t
-      "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
-      "owl:inverseFunctionalProperty" (translateInverseFunctionalProperty predicateMap)
-      "owl:ReflexiveProperty" (translateThinPropertyAxiom predicateMap "ReflexiveObjectProperty")
-      
-      )))
+  (let [object (:object predicateMap)]
+    (if (string? object)
+      "Thin triple" 
+      (case object
+        "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
+        "owl:inverseFunctionalProperty" (translateInverseFunctionalProperty predicateMap)
+        "owl:ReflexiveProperty" (translateThinPropertyAxiom predicateMap "ReflexiveObjectProperty")
+        "";can't translate
 
-
+        ))))
 
 (defn translate
   "Translate predicate map to OFS."
   [predicateMap]
   (let [p (:predicate predicateMap)];
-    (println predicateMap)
-    (println p) 
+    ;(println predicateMap)
+    ;(println p) 
     (case p
-    "rdfs:subClassOf" (translateSubclassOf predicateMap)
-    "owl:disjointUnionOf" (translateDisjointUnionOf predicateMap)
-    "rdfs:subPropertyOf" (translateSubObjectPropertyOf predicateMap)
-    "owl:propertyChainAxiom" (translateSubObjectPropertyOf predicateMap)
-    "owl:propertyDisjointWith" (translateDisjointProperties predicateMap)
-    "rdfs:domain" (translateDomain predicateMap)
-    "rdfs:range" (translateRange predicateMap)
-    "owl:inverseOf" (translateInverseOf predicateMap)
-    "rdf:type" (translateType predicateMap)
-    "owl:equivalentClass" (translateEquivalentClasses predicateMap);TODO case for normal axioms
-    "owl:AllDisjointClasses" (translateAllDisjointClasses predicateMap))))
-    ;TODO 
-    ;equivalence classes (here we would need to parse multiple triples?)
+      ;class expression axioms
+      "rdfs:subClassOf" (translateSubclassOf predicateMap)
+      "owl:disjointUnionOf" (translateDisjointUnionOf predicateMap)
+      "owl:equivalentClass" (translateEquivalentClasses predicateMap)
+      "owl:AllDisjointClasses" (translateAllDisjointClasses predicateMap)
+      ;object property  axioms
+      "rdfs:subPropertyOf" (translateSubObjectPropertyOf predicateMap)
+      "owl:propertyChainAxiom" (translateSubObjectPropertyOf predicateMap)
+      "owl:propertyDisjointWith" (translateDisjointProperties predicateMap)
+      "rdfs:domain" (translateDomain predicateMap)
+      "rdfs:range" (translateRange predicateMap)
+      "owl:inverseOf" (translateInverseOf predicateMap)
+      "rdf:type" (translateType predicateMap)
+      ;TODO: data property axioms
+      ;TODO: data type definitions
+      ;TODO: keys
+      ;TODO: assertions
+      ;TODO: annotations 
+      )))
