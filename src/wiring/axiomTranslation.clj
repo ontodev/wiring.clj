@@ -39,10 +39,10 @@
   "Translate Equivalent Class axiom"
   [predicates]
   (let [subject (classTranslation/translate (:subject predicates))
-        arguments (classTranslation/translate (:object predicates))] 
+        arguments (classTranslation/translate (:object predicates))] ;this can be a class or a list
     (if (map? (:object predicates))
-              (util/ofsFormat "EquivalentClasses" arguments)
-              (util/ofsFormat "EquivalentClasses" subject arguments))))
+              (util/ofsFormat "EquivalentClasses" arguments);EquivalentClasses(e1, ..., en)
+              (util/ofsFormat "EquivalentClasses" subject arguments))));EquivalentClasses(e1,e2) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;               Object Property Axioms
