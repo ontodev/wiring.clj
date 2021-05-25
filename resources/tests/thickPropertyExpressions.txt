@@ -1,0 +1,3 @@
+{"subject": "ex:A", "predicate": "rdf:type", "object": "owl:Class"}
+{"subject": "ex:A", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": {"owl:inverseOf": [{"object": ":exprop"}]}}], "owl:someValuesFrom": [{"object": ":exB"}]}}
+{"subject": "ex:prop", "predicate": "rdf:type", "object": "owl:ObjectProperty"} 
