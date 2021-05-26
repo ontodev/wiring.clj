@@ -4,6 +4,7 @@
             [clojure.spec.alpha :as spec]
             [wiring.util :as util]
             [wiring.propertyTranslation :as property]
+            [wiring.dataTypeTranslation :as dType]
             [wiring.spec :as owlspec]))
 
 (declare translate) ;recursive translation (not tail recursive)  
@@ -204,7 +205,8 @@
   (let [entrypoint (:rdf:type predicates)]
     (case entrypoint
       "owl:Restriction" (translateRestriction predicates)
-      "owl:Class" (translateClass predicates))))
+      "owl:Class" (translateClass predicates)
+      "rdfs:Datatype" (dType/translate predicates))))
 
 (defn translate
   "Translate predicate map to OFS."
