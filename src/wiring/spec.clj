@@ -42,9 +42,11 @@
 
 (spec/def ::rdf:type #{"owl:Restriction", "rdfs:Datatype", "owl:Class"})
 
-(spec/def ::rdf:first string?)
+(spec/def ::rdf:first (spec/or :map ::map
+                               :end string?))
 
-(spec/def ::rdf:rest ::map) ;;list
+(spec/def ::rdf:rest (spec/or :map ::map
+                             :end string?)) ;;list
 
 (spec/def ::owl:intersectionOf ::map); and this map needs to be a list
 
