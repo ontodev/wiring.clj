@@ -150,6 +150,7 @@
       "rdfs:range" (translateRange predicateMap)
       "owl:inverseOf" (translateInverseOf predicateMap)
       "rdf:type" (translateType predicateMap)
+      "Thin triple?"
       ;TODO: data property axioms
       ;TODO: data type definitions
       ;TODO: keys
