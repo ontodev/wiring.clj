@@ -1,9 +1,9 @@
-(ns wiring.parsing
+(ns wiring.thick2ofn.parsing
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [cheshire.core :as cs]
             [clojure.spec.alpha :as spec]
-            [wiring.spec :as owlspec]))
+            [wiring.thick2ofn.spec :as owlspec]))
 
 ;TODO handle single quotation marks {'subject': 'ex:A', 'predicate': 'rdf:type', 'object': 'owl:Class'} 
 ;TODO: handle quotations around thick map after 'object' 

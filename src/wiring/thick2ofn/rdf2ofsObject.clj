@@ -1,4 +1,4 @@
-(ns wiring.rdf2ofsObject
+(ns wiring.thick2ofn.rdf2ofsObject
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [cheshire.core :as cs]))

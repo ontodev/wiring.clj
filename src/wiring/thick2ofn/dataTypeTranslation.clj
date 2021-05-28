@@ -1,9 +1,9 @@
-(ns wiring.dataTypeTranslation
+(ns wiring.thick2ofn.dataTypeTranslation
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
-            [wiring.util :as util]
-            [wiring.spec :as owlspec]))
+            [wiring.thick2ofn.util :as util]
+            [wiring.thick2ofn.spec :as owlspec]))
 
 (declare translate) ;recursive translation (not tail recursive)  
 

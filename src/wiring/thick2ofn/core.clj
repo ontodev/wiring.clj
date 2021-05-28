@@ -1,11 +1,11 @@
-(ns wiring.core
+(ns wiring.thick2ofn.core
   (:require [clojure.repl :as repl]
-            [wiring.rdf2ofsObject :as rdf2ofsObject]
+            [wiring.thick2ofn.rdf2ofsObject :as rdf2ofsObject]
             [clojure.java.io :as io]
-            [wiring.parsing :as p]
-            [wiring.classTranslation :as cl]
-            [wiring.axiomTranslation :as t]
-            [wiring.spec :as spec])
+            [wiring.thick2ofn.parsing :as p]
+            [wiring.thick2ofn.classTranslation :as cl]
+            [wiring.thick2ofn.axiomTranslation :as t]
+            [wiring.thick2ofn.spec :as spec])
   (:gen-class))
 
 (defn -main

@@ -1,9 +1,9 @@
-(ns wiring.propertyTranslation
+(ns wiring.thick2ofn.propertyTranslation
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
-            [wiring.util :as util]
-            [wiring.spec :as owlspec]))
+            [wiring.thick2ofn.util :as util]
+            [wiring.thick2ofn.spec :as owlspec]))
 
 (declare translate) ;recursive parsing (not tail recursive)  
 

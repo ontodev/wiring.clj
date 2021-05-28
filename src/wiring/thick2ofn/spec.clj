@@ -1,4 +1,4 @@
-(ns wiring.spec
+(ns wiring.thick2ofn.spec
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [cheshire.core :as cs]

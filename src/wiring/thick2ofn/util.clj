@@ -1,8 +1,8 @@
-(ns wiring.util
+(ns wiring.thick2ofn.util
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
-            [wiring.spec :as owlspec]))
+            [wiring.thick2ofn.spec :as owlspec]))
 
 (defn typed? [predicates]
   (contains? predicates :rdf:type))

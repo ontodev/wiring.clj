@@ -1,11 +1,11 @@
-(ns wiring.axiomTranslation
+(ns wiring.thick2ofn.axiomTranslation 
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
-            [wiring.propertyTranslation :as propertyTranslation]
-            [wiring.classTranslation :as classTranslation]
-            [wiring.util :as util]
-            [wiring.spec :as owlspec]))
+            [wiring.thick2ofn.propertyTranslation :as propertyTranslation]
+            [wiring.thick2ofn.classTranslation :as classTranslation]
+            [wiring.thick2ofn.util :as util]
+            [wiring.thick2ofn.spec :as owlspec]))
 
 ;TODO data validation
 (declare translate)
