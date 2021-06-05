@@ -11,6 +11,22 @@
 (declare translate)
 
 ;TODO recursive translation for classes
+(defn namedClass?
+  "Checks whether an expression is a named class."
+  [ofn]
+  (let [operator (first ofn)];
+    (case operator
+      "ObjectSomeValuesFrom" false
+      "ObjectAllValuesFrom" false
+      "ObjectHasValue"  false
+      "ObjectMinCardinality" false
+      "ObjectMaxCardinality" false
+      "ObjectExactCardinality" false
+      "ObjectIntersectionOf" false
+      "ObjectUnionOf" false
+      "ObjectOneOf" false
+      "ObjectComplementOf" false
+      true)))
 
 ;NOTE this only translate a single axiom
 ;however, manchester syntax operates on class frames
@@ -19,7 +35,7 @@
   "Translate a SubClassOf axiom"
   [ofn]
   (let [[op lhs rhs] ofn
-        subject (str "Class: " (classTranslation/translate lhs) "\n\n");use class translation
+        subject (str "Class: " (classTranslation/translate lhs) "\n\n");LHS is required to be a named class
         predicate (str subject (apply str (repeat 4 " ")) "SubClassOf:\n")
         object (str predicate (apply str (repeat 8 " ")) (classTranslation/translate rhs))]
     object)) 
@@ -30,6 +46,7 @@
   (let [[operator & arguments] ofn
         disjoint "DisjointClasses:\n"
         indent (str disjoint (apply str (repeat 4 " ")))
+        arguments (map #(if (namedClass? %) % (str "("  (classTranslation/translate %) ")")) arguments)
         args (str indent (apply str (interpose "," arguments)))] 
     args))
 
@@ -41,6 +58,7 @@
         indent1 (str clas (apply str (repeat 4 " ")))
         disjointUnion (str indent1 "DisjointUnionOf:\n")
         indent2 (str disjointUnion (apply str (repeat 8 " "))) 
+        arguments (map #(if (namedClass? %) % (str "("  (classTranslation/translate %) ")")) arguments)
         args (str indent2 (apply str (interpose ", " arguments)))] 
     args))
 
@@ -53,6 +71,7 @@
         clas (str "Class: "  lhs "\n")
         indent1 (str clas (apply str (repeat 4 " ")))
         equivalence (str indent1 "EquivalentTo:\n")
+        arguments (map #(if (namedClass? %) % (str "("  (classTranslation/translate %) ")")) arguments)
         indentArgs (map #(str (apply str (repeat 8 " ")) %) arguments)
         args (str equivalence (apply str (interpose ",\n" indentArgs)))] 
     args))
