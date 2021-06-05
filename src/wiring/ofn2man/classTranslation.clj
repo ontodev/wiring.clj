@@ -1,7 +1,7 @@
 (ns wiring.ofn2man.classTranslation
   (:require [clojure.repl :as repl]
-            [clojure.java.io :as io])
-            ;[wiring.ofn2thick.propertyTranslation :as property]
+            [clojure.java.io :as io]
+            [wiring.ofn2man.propertyTranslation :as property])
             ;[wiring.thick2ofn.spec :as spec])
   (:gen-class))
 
@@ -32,41 +32,42 @@
 ;;                      Restrictions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;TODO: rethink handling of parentheses for (nested) class expressions
 (defn translateObjectSomeValuesFrom
   "Translate a ObjectSomeValuesFrom expression"
   [ofn]
   (let [[op property filler] ofn]
     (if (namedClass? filler)
-        (str property " some " filler)
-        (str property " some (" (translate filler) ")")))) 
+        (str (property/translate property) " some " filler)
+        (str (property/translate property) " some (" (translate filler) ")")))) 
 
 (defn translateObjectAllValuesFrom
   "Translate a ObjectAllValuesFrom expression"
   [ofn]
   (let [[op property filler] ofn]
     (if (namedClass? filler)
-        (str property " only " filler)
-        (str property " only (" (translate filler) ")")))) 
+        (str (property/translate property) " only " filler)
+        (str (property/translate property) " only (" (translate filler) ")")))) 
 
 (defn translateObjectHasValue
   "Translate a ObjectHasValue expression"
   [ofn]
   (let [[op property filler] ofn]
-        (str property " value " filler)));no nesting for filler because it's an individual
+        (str (property/translate property) " value " filler)));no nesting for filler because it's an individual
 
 (defn translateObjectMinUnqualifiedCardinality
   "Translate a ObjectMinCardinality expression"
   [ofn]
   (let [[op cardinality property] ofn] 
-        (str property " min " cardinality " owl:Thing")))
+        (str (property/translate property) " min " cardinality " owl:Thing")))
 
 (defn translateObjectMinQualifiedCardinality
   "Translate a ObjectMinQualifiedCardinality expression"
   [ofn]
   (let [[op cardinality property filler] ofn]
     (if (namedClass? filler)
-        (str property " min " cardinality " " filler)
-        (str property " min " cardinality " (" (translate filler) ")")))) 
+        (str (property/translate property) " min " cardinality " " filler)
+        (str (property/translate property) " min " cardinality " (" (translate filler) ")")))) 
 
 (defn translateObjectMinCardinality
   "Translate a ObjectMinCardinality expression"
@@ -79,15 +80,15 @@
   "Translate a ObjectMaxCardinality expression"
   [ofn]
   (let [[op cardinality property] ofn] 
-        (str property " max " cardinality " owl:Thing")))
+        (str (property/translate property) " max " cardinality " owl:Thing")))
 
 (defn translateObjectMaxQualifiedCardinality
   "Translate a ObjectMaxQualifiedCardinality expression"
   [ofn]
   (let [[op cardinality property filler] ofn]
     (if (namedClass? filler)
-        (str property " max " cardinality " " filler)
-        (str property " max " cardinality " (" (translate filler) ")")))) 
+        (str (property/translate property) " max " cardinality " " filler)
+        (str (property/translate property) " max " cardinality " (" (translate filler) ")")))) 
 
 (defn translateObjectMaxCardinality
   "Translate a ObjectMaxCardinality expression"
@@ -100,15 +101,15 @@
   "Translate a ObjectExactCardinality expression"
   [ofn]
   (let [[op cardinality property] ofn] 
-        (str property " exactly " cardinality " owl:Thing")))
+        (str (property/translate property) " exactly " cardinality " owl:Thing")))
 
 (defn translateObjectExactQualifiedCardinality
   "Translate a ObjectExactQualifiedCardinality expression"
   [ofn]
   (let [[op cardinality property filler] ofn]
     (if (namedClass? filler)
-        (str property " exactly " cardinality " " filler)
-        (str property " exactly " cardinality " (" (translate filler) ")")))) 
+        (str (property/translate property) " exactly " cardinality " " filler)
+        (str (property/translate property) " exactly " cardinality " (" (translate filler) ")")))) 
 
 (defn translateObjectExactCardinality
   "Translate a ObjectExactCardinality expression"
