@@ -19,7 +19,7 @@
 (defn translate 
   "Translate OFN-S property expression into predicate map"
   [ofn]
-  (println ofn)
+  ;(println ofn)
   (if (= "ObjectInverseOf" (first ofn))
     (translateInverseOf ofn)
     (str "\"" ofn "\"")))
