@@ -54,7 +54,7 @@
   {:pre [(spec/valid? ::owlspec/hasValue predicates)]
    :post [(spec/valid? string? %)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
-        filler (:owl:hasValue predicates)];individual
+        filler (str "\"" (:owl:hasValue predicates) "\"")];individual
     (util/ofsFormat "ObjectHasValue" onProperty filler)))
 
 (defn translateHasSelfRestriction
