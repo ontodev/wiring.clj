@@ -22,6 +22,8 @@
     (def inputString "{\"subject\": \"ex:existential\", \"predicate\": \"rdfs:subClassOf\", \"object\": {\"rdf:type\": [{\"object\": \"owl:Restriction\"}], \"owl:onProperty\": [{\"object\": \"ex:pExistential\"}], \"owl:someValuesFrom\": [{\"object\": \"ex:existentialFiller\"}]}}")
     (is (thick-ofn-thick-round-trip inputString))))
 
+;NB: the input test file does not include 'thin triples'
+;and does not include corner cases that involve the use of blank nodes
 (deftest prototype
   (testing "Thick triples from prototype.py"
     (with-open [rdr (io/reader (io/resource "tests/roundTripInput.txt"))]
