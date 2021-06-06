@@ -12,11 +12,11 @@
   "Translate class expressions into an RDF list"
   [expressions]
   (loop [in (reverse expressions);constructing list from last element to first
-    out "\"rdf:nill\""]
+    out "\"rdf:nil\""]
     (if (empty? in)
       out
       (recur (rest in)
-        (str "{\"rdf:first\": " (translate (first in)) ", " "\"rdf:rest\": [{\"object\": " out "}]}")))))
+        (str "{\"rdf:first\": [{\"object\": " (translate (first in)) "}], " "\"rdf:rest\": [{\"object\": " out "}]}")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      Restrictions
@@ -83,7 +83,7 @@
   "Translate a ObjectMinQualifiedCardinality expression"
   [ofn]
   (let [[op cardinality property filler] ofn
-        minCard "{\"owl:minCardinality\": "
+        minCard "{\"owl:minQualifiedCardinality\": "
         number (str minCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ") 
         property (str number "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         filler (str property "\"owl:onClass\": [{\"object\": " (translate filler) "}], ")
@@ -114,7 +114,7 @@
   "Translate a ObjectMaxQualifiedCardinality expression"
   [ofn]
   (let [[op cardinality property filler] ofn
-        maxCard "{\"owl:maxCardinality\": "
+        maxCard "{\"owl:maxQualifiedCardinality\": "
         number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ") 
         property (str number "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         filler (str property "\"owl:onClass\": [{\"object\": " (translate filler) "}], ")
@@ -213,10 +213,11 @@
       "ObjectHasValue"  (translateObjectHasValue ofn)
       "ObjectMinCardinality"  (translateObjectMinCardinality ofn)
       "ObjectMaxCardinality"  (translateObjectMaxCardinality ofn)
-      "ObjectExactCardinality"  (translateObjectMaxCardinality ofn)
+      "ObjectExactCardinality"  (translateObjectExactCardinality ofn)
       "ObjectIntersectionOf"  (translateObjectIntersection ofn)
       "ObjectUnionOf"  (translateObjectUnion ofn)
       "ObjectOneOf"  (translateObjectOneOf ofn)
       "ObjectComplementOf"  (translateObjectComplement ofn)
+      "ObjectHasSelf"  (translateObjectHasSelf ofn)
       (str \" ofn \"))))
 
