@@ -14,22 +14,29 @@
   "Translate class expressions into an RDF list"
   [expressions]
   (loop [in (reverse expressions);constructing list from last element to first
-    out "\"rdf:nill\""]
+    out "\"rdf:nil\""]
     (if (empty? in)
       out
       (recur (rest in)
-        (str "{\"rdf:first\": " (translate (first in)) ", " "\"rdf:rest\": [{\"object\": " out "}]}")))))
+        (str "{\"rdf:first\": [{\"object\": " (classTranslation/translate (first in)) "}], " "\"rdf:rest\": [{\"object\": " out "}]}")))))
 
 (defn translateEquivalentClasses
   "Translate a EquivalentClasses axiom"
   [ofn]
-  (let [[operator & arguments] ofn
-        subject (str "{\"subject\": \"" (gensym "_:genid") "\", ");use class translation 
+  (if (= 3 (count ofn))
+    (let [[operator lhs rhs] ofn;non-list case
+        subject (str "{\"subject\": " (classTranslation/translate lhs) ", ")
         predicate (str subject "\"predicate\": \"owl:equivalentClass\", ")
-        operands (translateList arguments) 
-        object (str predicate "\"object\": " operands)
+        object (str predicate "\"object\": " (classTranslation/translate rhs))
         closing (str object "}") ]
-    closing)) 
+    closing) 
+    (let [[operator & arguments] ofn;list case
+          subject (str "{\"subject\": \"" (gensym "_:genid") "\", ");use class translation 
+          predicate (str subject "\"predicate\": \"owl:equivalentClass\", ")
+          operands (translateList arguments) 
+          object (str predicate "\"object\": " operands)
+          closing (str object "}") ]
+      closing)))
 
 (defn translateDisjointClasses
   "Translate a DisjointClasses axiom"
