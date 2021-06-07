@@ -1,16 +1,18 @@
 (ns wiring.ofn2thick.classTranslation
   (:require [clojure.repl :as repl]
             [clojure.java.io :as io]
+            [clojure.spec.alpha :as spec]
             [wiring.ofn2thick.propertyTranslation :as property]
-            [wiring.thick2ofn.spec :as spec])
+            [wiring.ofn2thick.spec :as owlspec])
   (:gen-class))
 
-;TODO data validation
 (declare translate)
 
 (defn translateList
   "Translate class expressions into an RDF list"
   [expressions]
+  {:pre [(spec/valid? ::owlspec/list expressions)]
+   :post [(spec/valid? string? %)]}
   (loop [in (reverse expressions);constructing list from last element to first
          out "\"rdf:nil\""]
     (if (empty? in)
@@ -25,6 +27,8 @@
 (defn translateObjectSomeValuesFrom
   "Translate a ObjectSomeValuesFrom expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/someValuesFrom ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op property filler] ofn
         someValues "{\"owl:someValuesFrom\": "
         filler (str someValues "[{\"object\": " (translate filler) "}], ")
@@ -37,6 +41,8 @@
 (defn translateObjectAllValuesFrom
   "Translate a ObjectAllValuesFrom expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/allValuesFrom ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op property filler] ofn
         allValues "{\"owl:allValuesFrom\": "
         filler (str allValues "[{\"object\": " (translate filler) "}], ")
@@ -48,6 +54,8 @@
 (defn translateObjectHasValue
   "Translate a ObjectHasValue expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/hasValue ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op property filler] ofn
         hasValue "{\"owl:hasValue\": "
         filler (str hasValue "[{\"object\": " (translate filler) "}], ")
@@ -59,6 +67,8 @@
 (defn translateObjectHasSelf
   "Translate a ObjectHasValue expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/hasSelf ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op property] ofn
         hasValue "{\"owl:hasSelf\": "
         filler (str hasValue "[{\"object\": \"true^^xsd:boolean\"}], ")
@@ -70,6 +80,8 @@
 (defn translateObjectMinUnqualifiedCardinality
   "Translate a ObjectMinCardinality expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/minCardinality ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op cardinality property] ofn
         minCard "{\"owl:minCardinality\": "
         number (str minCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
@@ -81,6 +93,8 @@
 (defn translateObjectMinQualifiedCardinality
   "Translate a ObjectMinQualifiedCardinality expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/minQualifiedCardinality ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op cardinality property filler] ofn
         minCard "{\"owl:minQualifiedCardinality\": "
         number (str minCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
@@ -100,6 +114,8 @@
 (defn translateObjectMaxUnqualifiedCardinality
   "Translate a ObjectMaxCardinality expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/maxCardinality ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op cardinality property] ofn
         maxCard "{\"owl:maxCardinality\": "
         number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
@@ -111,6 +127,8 @@
 (defn translateObjectMaxQualifiedCardinality
   "Translate a ObjectMaxQualifiedCardinality expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/maxQualifiedCardinality ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op cardinality property filler] ofn
         maxCard "{\"owl:maxQualifiedCardinality\": "
         number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
@@ -130,6 +148,8 @@
 (defn translateObjectExactUnqualifiedCardinality
   "Translate a ObjectExactCardinality expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/exactCardinality ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op cardinality property] ofn
         maxCard "{\"owl:cardinality\": "
         number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
@@ -141,6 +161,8 @@
 (defn translateObjectExactQualifiedCardinality
   "Translate a ObjectExactQualifiedCardinality expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/exactQualifiedCardinality ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op cardinality property filler] ofn
         maxCard "{\"owl:qualifiedCardinality\": "
         number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
@@ -164,6 +186,8 @@
 (defn translateObjectIntersection
   "Translate an ObjectIntersectionOf expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/classIntersection ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[operator & arguments] ofn
         intersection "{\"owl:intersectionOf\": "
         operands (str intersection "[{\"object\": " (translateList arguments) "}]")
@@ -174,6 +198,8 @@
 (defn translateObjectUnion
   "Translate an ObjectIntersectionOf expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/classUnion ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[operator & arguments] ofn
         union "{\"owl:unionOf\": "
         operands (str union "[{\"object\": " (translateList arguments) "}]")
@@ -184,6 +210,8 @@
 (defn translateObjectOneOf
   "Translate an ObjectOneOf expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/oneOf ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[operator & arguments] ofn
         oneOf "{\"owl:oneOf\": "
         operands (str oneOf "[{\"object\": " (translateList arguments) "}]") ;TODO: translation for individuals
@@ -194,6 +222,8 @@
 (defn translateObjectComplement
   "Translate an ObjectComplementOf expression"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/classComplement ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[operator argument] ofn
         compl "{\"owl:complementOf\": "
         operand (str compl "[{\"object\": " (translate argument) "}]")
