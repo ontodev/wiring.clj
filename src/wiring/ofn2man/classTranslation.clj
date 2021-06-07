@@ -8,7 +8,7 @@
 ;TODO pretty printing with line breaks and indentations
 
 ;TODO data validation
-(declare translate) 
+(declare translate)
 
 ;TODO nested property expressions
 (defn namedClass?
@@ -38,36 +38,36 @@
   [ofn]
   (let [[op property filler] ofn]
     (if (namedClass? filler)
-        (str (property/translate property) " some " filler)
-        (str (property/translate property) " some (" (translate filler) ")")))) 
+      (str (property/translate property) " some " filler)
+      (str (property/translate property) " some (" (translate filler) ")"))))
 
 (defn translateObjectAllValuesFrom
   "Translate a ObjectAllValuesFrom expression"
   [ofn]
   (let [[op property filler] ofn]
     (if (namedClass? filler)
-        (str (property/translate property) " only " filler)
-        (str (property/translate property) " only (" (translate filler) ")")))) 
+      (str (property/translate property) " only " filler)
+      (str (property/translate property) " only (" (translate filler) ")"))))
 
 (defn translateObjectHasValue
   "Translate a ObjectHasValue expression"
   [ofn]
   (let [[op property filler] ofn]
-        (str (property/translate property) " value " filler)));no nesting for filler because it's an individual
+    (str (property/translate property) " value " filler)));no nesting for filler because it's an individual
 
 (defn translateObjectMinUnqualifiedCardinality
   "Translate a ObjectMinCardinality expression"
   [ofn]
-  (let [[op cardinality property] ofn] 
-        (str (property/translate property) " min " cardinality " owl:Thing")))
+  (let [[op cardinality property] ofn]
+    (str (property/translate property) " min " cardinality " owl:Thing")))
 
 (defn translateObjectMinQualifiedCardinality
   "Translate a ObjectMinQualifiedCardinality expression"
   [ofn]
   (let [[op cardinality property filler] ofn]
     (if (namedClass? filler)
-        (str (property/translate property) " min " cardinality " " filler)
-        (str (property/translate property) " min " cardinality " (" (translate filler) ")")))) 
+      (str (property/translate property) " min " cardinality " " filler)
+      (str (property/translate property) " min " cardinality " (" (translate filler) ")"))))
 
 (defn translateObjectMinCardinality
   "Translate a ObjectMinCardinality expression"
@@ -79,16 +79,16 @@
 (defn translateObjectMaxUnqualifiedCardinality
   "Translate a ObjectMaxCardinality expression"
   [ofn]
-  (let [[op cardinality property] ofn] 
-        (str (property/translate property) " max " cardinality " owl:Thing")))
+  (let [[op cardinality property] ofn]
+    (str (property/translate property) " max " cardinality " owl:Thing")))
 
 (defn translateObjectMaxQualifiedCardinality
   "Translate a ObjectMaxQualifiedCardinality expression"
   [ofn]
   (let [[op cardinality property filler] ofn]
     (if (namedClass? filler)
-        (str (property/translate property) " max " cardinality " " filler)
-        (str (property/translate property) " max " cardinality " (" (translate filler) ")")))) 
+      (str (property/translate property) " max " cardinality " " filler)
+      (str (property/translate property) " max " cardinality " (" (translate filler) ")"))))
 
 (defn translateObjectMaxCardinality
   "Translate a ObjectMaxCardinality expression"
@@ -100,16 +100,16 @@
 (defn translateObjectExactUnqualifiedCardinality
   "Translate a ObjectExactCardinality expression"
   [ofn]
-  (let [[op cardinality property] ofn] 
-        (str (property/translate property) " exactly " cardinality " owl:Thing")))
+  (let [[op cardinality property] ofn]
+    (str (property/translate property) " exactly " cardinality " owl:Thing")))
 
 (defn translateObjectExactQualifiedCardinality
   "Translate a ObjectExactQualifiedCardinality expression"
   [ofn]
   (let [[op cardinality property filler] ofn]
     (if (namedClass? filler)
-        (str (property/translate property) " exactly " cardinality " " filler)
-        (str (property/translate property) " exactly " cardinality " (" (translate filler) ")")))) 
+      (str (property/translate property) " exactly " cardinality " " filler)
+      (str (property/translate property) " exactly " cardinality " (" (translate filler) ")"))))
 
 (defn translateObjectExactCardinality
   "Translate a ObjectExactCardinality expression"
@@ -117,6 +117,12 @@
   (if (= 3 (count ofn))
     (translateObjectExactUnqualifiedCardinality ofn)
     (translateObjectExactQualifiedCardinality ofn)))
+
+(defn translateObjectHasSelf
+  "Translate a ObjectHasValue expression"
+  [ofn]
+  (let [[op property] ofn]
+    (str (property/translate property) " some Self")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;             Propositional Connectives
@@ -140,7 +146,7 @@
   "Translate an ObjectOneOf expression"
   [ofn]
   (let [[operator & arguments] ofn]
-   (str "{" (apply str (interpose " , " arguments)) "}")))
+    (str "{" (apply str (interpose " , " arguments)) "}")))
 
 (defn translateObjectComplement
   "Translate an ObjectComplementOf expression"
@@ -163,5 +169,6 @@
       "ObjectUnionOf"  (translateObjectUnion ofn)
       "ObjectOneOf"  (translateObjectOneOf ofn)
       "ObjectComplementOf"  (translateObjectComplement ofn)
+      "ObjectHasSelf"  (translateObjectHasSelf ofn)
       ofn)))
 

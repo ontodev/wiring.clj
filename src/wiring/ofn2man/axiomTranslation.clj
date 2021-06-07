@@ -1,4 +1,4 @@
-(ns wiring.ofn2man.axiomTranslation 
+(ns wiring.ofn2man.axiomTranslation
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
@@ -10,7 +10,6 @@
 ;TODO data validation
 (declare translate)
 
-;TODO recursive translation for classes
 (defn namedClass?
   "Checks whether an expression is a named class."
   [ofn]
@@ -38,7 +37,7 @@
         subject (str "Class: " (classTranslation/translate lhs) "\n\n");LHS is required to be a named class
         predicate (str subject (apply str (repeat 4 " ")) "SubClassOf:\n")
         object (str predicate (apply str (repeat 8 " ")) (classTranslation/translate rhs))]
-    object)) 
+    object))
 
 (defn translateDisjointClasses
   "Translate a DisjointClasses axiom"
@@ -47,7 +46,7 @@
         disjoint "DisjointClasses:\n"
         indent (str disjoint (apply str (repeat 4 " ")))
         arguments (map #(if (namedClass? %) % (str "("  (classTranslation/translate %) ")")) arguments)
-        args (str indent (apply str (interpose "," arguments)))] 
+        args (str indent (apply str (interpose "," arguments)))]
     args))
 
 (defn translateDisjointUnion
@@ -57,9 +56,9 @@
         clas (str "Class: "  lhs "\n")
         indent1 (str clas (apply str (repeat 4 " ")))
         disjointUnion (str indent1 "DisjointUnionOf:\n")
-        indent2 (str disjointUnion (apply str (repeat 8 " "))) 
+        indent2 (str disjointUnion (apply str (repeat 8 " ")))
         arguments (map #(if (namedClass? %) % (str "("  (classTranslation/translate %) ")")) arguments)
-        args (str indent2 (apply str (interpose ", " arguments)))] 
+        args (str indent2 (apply str (interpose ", " arguments)))]
     args))
 
 ;NB manchester syntax would require the enumeration of all possible class frames
@@ -73,7 +72,7 @@
         equivalence (str indent1 "EquivalentTo:\n")
         arguments (map #(if (namedClass? %) % (str "("  (classTranslation/translate %) ")")) arguments)
         indentArgs (map #(str (apply str (repeat 8 " ")) %) arguments)
-        args (str equivalence (apply str (interpose ",\n" indentArgs)))] 
+        args (str equivalence (apply str (interpose ",\n" indentArgs)))]
     args))
 
 ;NOTE: this translate a single axiom into manchester syntax 
@@ -103,4 +102,4 @@
       ;TODO: keys
       ;TODO: assertions
       ;TODO: annotations 
-      ofn )))
+      ofn)))

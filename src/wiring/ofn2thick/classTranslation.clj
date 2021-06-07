@@ -6,17 +6,17 @@
   (:gen-class))
 
 ;TODO data validation
-(declare translate) 
+(declare translate)
 
 (defn translateList
   "Translate class expressions into an RDF list"
   [expressions]
   (loop [in (reverse expressions);constructing list from last element to first
-    out "\"rdf:nil\""]
+         out "\"rdf:nil\""]
     (if (empty? in)
       out
       (recur (rest in)
-        (str "{\"rdf:first\": [{\"object\": " (translate (first in)) "}], " "\"rdf:rest\": [{\"object\": " out "}]}")))))
+             (str "{\"rdf:first\": [{\"object\": " (translate (first in)) "}], " "\"rdf:rest\": [{\"object\": " out "}]}")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      Restrictions
@@ -27,7 +27,7 @@
   [ofn]
   (let [[op property filler] ofn
         someValues "{\"owl:someValuesFrom\": "
-        filler (str someValues "[{\"object\": " (translate filler) "}], ") 
+        filler (str someValues "[{\"object\": " (translate filler) "}], ")
         property (str filler "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         rdfType (str property "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
         closing (str rdfType "}")]
@@ -39,7 +39,7 @@
   [ofn]
   (let [[op property filler] ofn
         allValues "{\"owl:allValuesFrom\": "
-        filler (str allValues "[{\"object\": " (translate filler) "}], ") 
+        filler (str allValues "[{\"object\": " (translate filler) "}], ")
         property (str filler "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         rdfType (str property "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
         closing (str rdfType "}")]
@@ -50,7 +50,7 @@
   [ofn]
   (let [[op property filler] ofn
         hasValue "{\"owl:hasValue\": "
-        filler (str hasValue "[{\"object\": " (translate filler) "}], ") 
+        filler (str hasValue "[{\"object\": " (translate filler) "}], ")
         property (str filler "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         rdfType (str property "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
         closing (str rdfType "}")]
@@ -61,19 +61,18 @@
   [ofn]
   (let [[op property] ofn
         hasValue "{\"owl:hasSelf\": "
-        filler (str hasValue "[{\"object\": \"true^^xsd:boolean\"}], ") 
+        filler (str hasValue "[{\"object\": \"true^^xsd:boolean\"}], ")
         property (str filler "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         rdfType (str property "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
         closing (str rdfType "}")]
     closing))
-
 
 (defn translateObjectMinUnqualifiedCardinality
   "Translate a ObjectMinCardinality expression"
   [ofn]
   (let [[op cardinality property] ofn
         minCard "{\"owl:minCardinality\": "
-        number (str minCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ") 
+        number (str minCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
         property (str number "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         rdfType (str property "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
         closing (str rdfType "}")]
@@ -84,7 +83,7 @@
   [ofn]
   (let [[op cardinality property filler] ofn
         minCard "{\"owl:minQualifiedCardinality\": "
-        number (str minCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ") 
+        number (str minCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
         property (str number "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         filler (str property "\"owl:onClass\": [{\"object\": " (translate filler) "}], ")
         rdfType (str filler "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
@@ -98,13 +97,12 @@
     (translateObjectMinUnqualifiedCardinality ofn)
     (translateObjectMinQualifiedCardinality ofn)))
 
-
 (defn translateObjectMaxUnqualifiedCardinality
   "Translate a ObjectMaxCardinality expression"
   [ofn]
   (let [[op cardinality property] ofn
         maxCard "{\"owl:maxCardinality\": "
-        number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ") 
+        number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
         property (str number "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         rdfType (str property "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
         closing (str rdfType "}")]
@@ -115,7 +113,7 @@
   [ofn]
   (let [[op cardinality property filler] ofn
         maxCard "{\"owl:maxQualifiedCardinality\": "
-        number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ") 
+        number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
         property (str number "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         filler (str property "\"owl:onClass\": [{\"object\": " (translate filler) "}], ")
         rdfType (str filler "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
@@ -134,7 +132,7 @@
   [ofn]
   (let [[op cardinality property] ofn
         maxCard "{\"owl:cardinality\": "
-        number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ") 
+        number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
         property (str number "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         rdfType (str property "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
         closing (str rdfType "}")]
@@ -145,7 +143,7 @@
   [ofn]
   (let [[op cardinality property filler] ofn
         maxCard "{\"owl:qualifiedCardinality\": "
-        number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ") 
+        number (str maxCard "[{\"object\": \"" cardinality "^^xsd:nonNegativeInteger\"}], ")
         property (str number "\"owl:onProperty\": [{\"object\": " (property/translate property) "}], ")
         filler (str property "\"owl:onClass\": [{\"object\": " (translate filler) "}], ")
         rdfType (str filler "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
@@ -168,20 +166,20 @@
   [ofn]
   (let [[operator & arguments] ofn
         intersection "{\"owl:intersectionOf\": "
-        operands (str intersection "[{\"object\": " (translateList arguments) "}]") 
+        operands (str intersection "[{\"object\": " (translateList arguments) "}]")
         rdfType (str operands ", \"rdf:type\": [{\"object\": \"owl:Class\"}]")
         closing (str rdfType "}")]
-    closing)) 
+    closing))
 
 (defn translateObjectUnion
   "Translate an ObjectIntersectionOf expression"
   [ofn]
   (let [[operator & arguments] ofn
         union "{\"owl:unionOf\": "
-        operands (str union "[{\"object\": " (translateList arguments) "}]") 
+        operands (str union "[{\"object\": " (translateList arguments) "}]")
         rdfType (str operands ", \"rdf:type\": [{\"object\": \"owl:Class\"}]")
         closing (str rdfType "}")]
-    closing)) 
+    closing))
 
 (defn translateObjectOneOf
   "Translate an ObjectOneOf expression"
@@ -191,7 +189,7 @@
         operands (str oneOf "[{\"object\": " (translateList arguments) "}]") ;TODO: translation for individuals
         rdfType (str operands ", \"rdf:type\": [{\"object\": \"owl:Class\"}]")
         closing (str rdfType "}")]
-    closing)) 
+    closing))
 
 (defn translateObjectComplement
   "Translate an ObjectComplementOf expression"

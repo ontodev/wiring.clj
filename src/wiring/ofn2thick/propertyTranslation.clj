@@ -5,9 +5,9 @@
   (:gen-class))
 
 ;TODO data validation
-(declare translate) 
+(declare translate)
 
-(defn translateInverseOf 
+(defn translateInverseOf
   "Translate ObjectInverseOf expression"
   [ofn]
   (let [[op arg] ofn
@@ -16,7 +16,7 @@
         closing (str operand "}")]
     closing))
 
-(defn translate 
+(defn translate
   "Translate OFN-S property expression into predicate map"
   [ofn]
   ;(println ofn)
