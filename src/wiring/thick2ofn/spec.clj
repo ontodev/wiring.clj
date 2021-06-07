@@ -79,8 +79,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      Restrictions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;TODO: encapsulate commonalities of restrictions here?
-;could use spec/merge for this
 (spec/def ::restriction (spec/keys :req-un [::owl:onProperty]
                                    :opt-un [::rdf:type]))
 
