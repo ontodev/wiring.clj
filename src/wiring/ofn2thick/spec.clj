@@ -90,3 +90,11 @@
 (spec/def ::classComplement (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 2)
                              (spec/cat :operator #(= % "ObjectComplementOf") :argument ::classExpression))) 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;              Property Expressions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+
+(spec/def ::inverseOf (spec/and 
+                             (spec/coll-of string-or-coll? :kind seq :count 2)
+                             (spec/cat :operator #(= % "ObjectInverseOf") :argument ::propertyExpression))) 
