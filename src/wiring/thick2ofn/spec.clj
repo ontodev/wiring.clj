@@ -12,6 +12,12 @@
 
 (spec/def ::individual string?)
 
+;TODO: could we be more precise for class constructors 
+;by enumerating all possiblities?
+;Doing so would have the disadvantage of invalidating data input at the wrong place.
+;I would like to now *which* class constructor is invalid and why.
+;This is already handled by the current design because a class constructor will
+;need to be translated and be validated by its corresponding spec.
 (spec/def ::classExpression (spec/or :namedClass string?
                                   :classConstructor ::map))
 
@@ -111,7 +117,6 @@
 
 (spec/def ::exactQualifiedCardinality (spec/merge ::restriction
                                                   (spec/keys :req-un [::owl:qualifiedCardinality ::owl:onClass])))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;              Propositional Connectives
