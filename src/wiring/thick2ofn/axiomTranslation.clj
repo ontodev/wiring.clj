@@ -1,4 +1,4 @@
-(ns wiring.thick2ofn.axiomTranslation 
+(ns wiring.thick2ofn.axiomTranslation
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
@@ -17,6 +17,8 @@
 (defn translateSubclassOf
   "Translate a SubClassOf axiom"
   [predicates]
+  {:pre [(spec/valid? ::owlspec/thickTriple predicates)]
+   :post [(spec/valid? string? %)]}
   (let [subclass (classTranslation/translate (:subject predicates))
         superclass (classTranslation/translate (:object predicates))]
     (util/ofsFormat "SubClassOf" subclass superclass)))
@@ -24,6 +26,8 @@
 (defn translateDisjointUnionOf
   "Translate a DisjointUnion axiom"
   [predicates]
+  {:pre [(spec/valid? ::owlspec/thickTriple predicates)]
+   :post [(spec/valid? string? %)]}
   (let [subject (classTranslation/translate (:subject predicates))
         arguments (classTranslation/translate (:object predicates))]
     (util/ofsFormat "DisjointUnion" subject arguments)))
@@ -31,6 +35,8 @@
 (defn translateAllDisjointClasses
   "Translate DisjointClasses axiom"
   [predicates]
+  {:pre [(spec/valid? ::owlspec/thickTriple predicates)]
+   :post [(spec/valid? string? %)]}
   (let [arguments (classTranslation/translate (:owl:members (:object predicates)))]
   ;(let [arguments (classTranslation/translate (:object predicates))]
     (util/ofsFormat "DisjointClasses" arguments)))
@@ -38,6 +44,8 @@
 (defn translateEquivalentClasses
   "Translate Equivalent Class axiom"
   [predicates]
+  {:pre [(spec/valid? ::owlspec/thickTriple predicates)]
+   :post [(spec/valid? string? %)]}
   (let [subject (classTranslation/translate (:subject predicates))
         arguments (classTranslation/translate (:object predicates))
         nAry (contains? (:object predicates) :rdf:first)]

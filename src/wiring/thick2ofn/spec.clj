@@ -83,7 +83,7 @@
 (spec/def ::list (spec/keys :req-un [::rdf:first ::rdf:rest]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                      Restrictions
+;;             Restrictions for Classes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (spec/def ::restriction (spec/keys :req-un [::owl:onProperty]
                                    :opt-un [::rdf:type]))
@@ -119,7 +119,7 @@
                                                   (spec/keys :req-un [::owl:qualifiedCardinality ::owl:onClass])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;              Propositional Connectives
+;;  Propositional Connectives for Class Expressions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 (spec/def ::classIntersection (spec/keys :req-un [::owl:intersectionOf]
@@ -129,9 +129,27 @@
                                   :opt-un [::rdf:type]))
 
 (spec/def ::oneOf (spec/keys :req-un [::owl:oneOf]
-                             :opt-un [::rdf:type]))
+                             :opt-un [::rdf:type])) 
+
+(spec/def ::classComplement (spec/keys :req-un [::owl:complementOf]
+
+                                       :opt-un [::rdf:type]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;          Object Property Expressions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 (spec/def ::inverseOf (spec/keys :req-un [::owl:inverseOf]))
 
-(spec/def ::classComplement (spec/keys :req-un [::owl:complementOf]
-                                       :opt-un [::rdf:type]))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;              Thick Triples
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(spec/def ::subject (spec/or :atom string?))
+
+(spec/def ::predicate (spec/or :atom string?))
+
+(spec/def ::object (spec/or :atom string?
+                               :constructor ::map)) 
+
+(spec/def ::thickTriple (spec/keys :req-un [::subject ::predicate ::object]))
