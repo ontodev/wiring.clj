@@ -65,11 +65,11 @@
 
 (spec/def ::exactQualifiedCardinality (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 4)
-                             (spec/cat :operator #(= % "ObjectExactQualifiedCardinality") :cardinality string-Number? :property ::propertyExpression :filler ::classExpression)))
+                             (spec/cat :operator #(= % "ObjectExactCardinality") :cardinality string-Number? :property ::propertyExpression :filler ::classExpression)))
 
 (spec/def ::exactCardinality (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 3)
-                             (spec/cat :operator #(= % "ObjectExactQualifiedCardinality") :cardinality string-Number? :property ::propertyExpression)))
+                             (spec/cat :operator #(= % "ObjectExactCardinality") :cardinality string-Number? :property ::propertyExpression)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Propositional Connectives for Class Expressions
@@ -83,7 +83,7 @@
                              (spec/coll-of string-or-coll? :kind seq)
                              (spec/cat :operator #(= % "ObjectUnionOf") :arguments (spec/* ::classExpression))))
 
-(spec/def ::classOneOf (spec/and 
+(spec/def ::oneOf (spec/and 
                              (spec/coll-of string-or-coll? :kind seq)
                              (spec/cat :operator #(= % "ObjectOneOf") :arguments (spec/* ::individual))))
 
