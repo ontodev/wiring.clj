@@ -1,11 +1,11 @@
 (ns wiring.ofn2thick.axiomTranslation
   (:require [clojure.repl :as repl]
             [clojure.java.io :as io]
+            [clojure.spec.alpha :as spec]
             [wiring.ofn2thick.classTranslation :as classTranslation]
-            [wiring.thick2ofn.spec :as spec])
+            [wiring.ofn2thick.spec :as owlspec])
   (:gen-class))
 
-;TODO data validation
 ;TODO; make sure generated blank nodes are unique 
 ;(this is best done in a post-processing step I guess)
 (declare translate)
@@ -23,6 +23,8 @@
 (defn translateEquivalentClasses
   "Translate a EquivalentClasses axiom"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/equivalentClasses ofn)]
+   :post [(spec/valid? string? %)]}
   (if (= 3 (count ofn))
     (let [[operator lhs rhs] ofn;non-list case
           subject (str "{\"subject\": " (classTranslation/translate lhs) ", ")
@@ -41,6 +43,8 @@
 (defn translateDisjointClasses
   "Translate a DisjointClasses axiom"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/disjointClasses ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[operator & arguments] ofn
         subject (str "{\"subject\": \"" (gensym "_:genid") "\", ");use class translation 
         predicate (str subject "\"predicate\": \"owl:allDisjointClasses\", ")
@@ -52,6 +56,8 @@
 (defn translateDisjointUnion
   "Translate a DisjointUnion axiom"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/disjointUnion ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[operator lhs & arguments] ofn
         subject (str "{\"subject\": " (classTranslation/translate lhs) ", ");use class translation 
         predicate (str subject "\"predicate\": \"owl:disjointUnionOf\", ")
@@ -63,6 +69,8 @@
 (defn translateSubclassOf
   "Translate a SubClassOf axiom"
   [ofn]
+  {:pre [(spec/valid? ::owlspec/subclassOf ofn)]
+   :post [(spec/valid? string? %)]}
   (let [[op lhs rhs] ofn
         subject (str "{\"subject\": " (classTranslation/translate lhs) ", ");use class translation
         predicate (str subject "\"predicate\": \"rdfs:subClassOf\", ")

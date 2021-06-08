@@ -28,7 +28,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                      Restrictions
+;;                Class Restrictions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (spec/def ::someValuesFrom (spec/and 
@@ -72,7 +72,7 @@
                              (spec/cat :operator #(= % "ObjectExactQualifiedCardinality") :cardinality string-Number? :property ::propertyExpression)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;              Propositional Connectives
+;;  Propositional Connectives for Class Expressions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 (spec/def ::classIntersection (spec/and 
@@ -92,9 +92,32 @@
                              (spec/cat :operator #(= % "ObjectComplementOf") :argument ::classExpression))) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;              Property Expressions
+;;          Object Property Expressions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 (spec/def ::inverseOf (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 2)
                              (spec/cat :operator #(= % "ObjectInverseOf") :argument ::propertyExpression))) 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;          Class Expression Axioms
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+(spec/def ::subclassOf (spec/and 
+                             (spec/coll-of string-or-coll? :kind seq :count 3)
+                             (spec/cat :operator #(= % "SubClassOf") :leftHandSide ::classExpression :rightHandSide ::classExpression))) 
+
+(spec/def ::equivalentClasses (spec/and 
+                             (spec/coll-of string-or-coll? :kind seq)
+                             (spec/cat :operator #(= % "EquivalentClasses") :arguments (spec/* ::classExpression))))
+
+
+(spec/def ::disjointClasses (spec/and 
+                             (spec/coll-of string-or-coll? :kind seq)
+                             (spec/cat :operator #(= % "DisjointClasses") :arguments (spec/* ::classExpression))))
+
+;Note that the 'left-hand side' class of a DisjointUnion axiom is validated
+;in the same way as the 'right-hand side' classes
+(spec/def ::disjointUnion (spec/and 
+                             (spec/coll-of string-or-coll? :kind seq)
+                             (spec/cat :operator #(= % "DisjointUnion") :arguments (spec/* ::classExpression))))
+
