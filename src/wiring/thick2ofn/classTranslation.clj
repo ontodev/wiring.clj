@@ -9,6 +9,32 @@
 
 (declare translate) ;recursive translation (not tail recursive)  
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;             Type Inference Utilities
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;The following two functions are used to infer the type of some expressions
+;For example an existential restriciton can be either an
+;ObjectSomeValuesFrom or a DataSomeValuesFrom.
+;If we can determine whether the used property expression or the filler
+;is an ObjectProperty (DataProperty) or a Class (Datatype),
+;then, we can infer the type of the expression itself.  
+
+(defn isClassExpression?
+  "Checks whether input 'expression' is an OWL class expression"
+  [expression]
+  (if (and (map? expression)
+           (contains? expression :rdf:type))
+    (or (= "owl:Class" (:rdf:type expression))
+        (= "owl:Restriction" (:rdf:type expression)));Restrictions are class expressions
+    false));could still be a named class expression - but we can't find that out without type information
+
+(defn isPropertyExpression?
+  "Checks whether input 'expression' is an OWL class expression"
+  [expression]
+  (and (map? expression)
+       (contains? expression :owl:inverseOf)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      RDF
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,14 +56,21 @@
 ;;                      Restrictions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;since we don't have type information available in thick triples
+;we use an abstraction that will be translated in a second step
 (defn translateExistentialRestriction
   "Translate an existential restriction."
   [predicates]
   {:pre [(spec/valid? ::owlspec/existential predicates)]
    :post [(spec/valid? string? %)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
-        filler (translate (:owl:someValuesFrom predicates))]
-    (util/ofsFormat "ObjectSomeValuesFrom" onProperty filler)))
+        filler (translate (:owl:someValuesFrom predicates))
+        rawProperty (:owl:onProperty predicates)
+        rawFiller (:owl:someValuesFrom predicates)]
+    (if (or (isClassExpression? rawFiller) 
+            (isPropertyExpression? rawProperty))
+      (util/ofsFormat "ObjectSomeValuesFrom" onProperty filler)
+      (util/ofsFormat "SomeValuesFrom" onProperty filler))));!!! this is an OFN-S abstraction
 
 (defn translateUniversalRestriction
   "Translate a universal restriction."
@@ -45,17 +78,25 @@
   {:pre [(spec/valid? ::owlspec/universal predicates)]
    :post [(spec/valid? string? %)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
-        filler (translate (:owl:allValuesFrom predicates))]
-    (util/ofsFormat "ObjectAllValuesFrom" onProperty filler)))
+        filler (translate (:owl:allValuesFrom predicates))
+        rawProperty (:owl:onProperty predicates)
+        rawFiller (:owl:someValuesFrom predicates)]
+    (if (or (isClassExpression? rawFiller)
+            (isPropertyExpression? rawProperty))
+      (util/ofsFormat "ObjectAllValuesFrom" onProperty filler)
+      (util/ofsFormat "AllValuesFrom" onProperty filler))))
 
 (defn translateHasValueRestriction
   "Translate hasValue restriction."
   [predicates]
   {:pre [(spec/valid? ::owlspec/hasValue predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (property/translate (:owl:onProperty predicates))
+  (let [onProperty (property/translate (:owl:onProperty predicates)) 
+        rawProperty (:owl:onProperty predicates)
         filler (str "\"" (:owl:hasValue predicates) "\"")];individual
-    (util/ofsFormat "ObjectHasValue" onProperty filler)))
+    (if (isPropertyExpression? rawProperty)
+      (util/ofsFormat "ObjectHasValue" onProperty filler);type inference
+      (util/ofsFormat "HasValue" onProperty filler))))
 
 (defn translateHasSelfRestriction
   "Translate hasSelf restriction."
@@ -63,16 +104,19 @@
   {:pre [(spec/valid? ::owlspec/hasSelf predicates)]
    :post [(spec/valid? string? %)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))]
-    (util/ofsFormat "ObjectHasSelf" onProperty)))
+    (util/ofsFormat "ObjectHasSelf" onProperty)));this has no datatype variant
 
 (defn translateMinCardinalityRestriction
   "Translate minimum cardinality restriction."
   [predicates]
   {:pre [(spec/valid? ::owlspec/minCardinality predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (property/translate (:owl:onProperty predicates))
-        cardinality (util/getNumber (:owl:minCardinality predicates))];
-    (util/ofsFormat "ObjectMinCardinality" cardinality onProperty)))
+  (let [onProperty (property/translate (:owl:onProperty predicates)) 
+        rawProperty (:owl:onProperty predicates)
+        cardinality (util/getNumber (:owl:minCardinality predicates))]; 
+    (if (isPropertyExpression? rawProperty)
+      (util/ofsFormat "ObjectMinCardinality" cardinality onProperty)
+      (util/ofsFormat "MinCardinality" cardinality onProperty))))
 
 (defn translateMinQualifiedCardinalityRestriction
   "Translate minimum qualified cardinality restriction."
@@ -89,9 +133,12 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/maxCardinality predicates)]
    :post [(spec/valid? string? %)]}
-  (let [onProperty (property/translate (:owl:onProperty predicates))
+  (let [onProperty (property/translate (:owl:onProperty predicates)) 
+        rawProperty (:owl:onProperty predicates)
         cardinality (util/getNumber (:owl:maxCardinality predicates))];
-    (util/ofsFormat "ObjectMaxCardinality" cardinality onProperty)))
+    (if (isPropertyExpression? rawProperty)
+      (util/ofsFormat "ObjectMaxCardinality" cardinality onProperty)
+      (util/ofsFormat "MaxCardinality" cardinality onProperty))))
 
 (defn translateMaxQualifiedCardinalityRestriction
   "Translate maximum qualified cardinality restriction."
@@ -109,8 +156,11 @@
   {:pre [(spec/valid? ::owlspec/exactCardinality predicates)]
    :post [(spec/valid? string? %)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
+        rawProperty (:owl:onProperty predicates) 
         cardinality (util/getNumber (:owl:cardinality predicates))];
-    (util/ofsFormat "ObjectExactCardinality" cardinality onProperty)))
+    (if (isPropertyExpression? rawProperty)
+      (util/ofsFormat "ObjectExactCardinality" cardinality onProperty)
+      (util/ofsFormat "ExactCardinality" cardinality onProperty))))
 
 (defn translateExactQualifiedCardinalityRestriction
   "Translate exact qualified cardinality restriction."
