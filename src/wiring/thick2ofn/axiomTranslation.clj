@@ -53,6 +53,13 @@
       (util/ofsFormat "EquivalentClasses" arguments);EquivalentClasses(e1, ..., en)
       (util/ofsFormat "EquivalentClasses" subject arguments))));EquivalentClasses(e1,e2) 
 
+(defn translateDisjointWith
+  "Translate DisjointClasses axiom with only two operands."
+  [predicates]
+  (let [lhs (classTranslation/translate (:subject predicates))
+        rhs (classTranslation/translate (:object predicates))]
+    (util/ofsFormat "DisjointClasses" lhs rhs)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;               Object Property Axioms
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -150,6 +157,7 @@
       "owl:disjointUnionOf" (translateDisjointUnionOf predicateMap)
       "owl:equivalentClass" (translateEquivalentClasses predicateMap)
       "owl:AllDisjointClasses" (translateAllDisjointClasses predicateMap)
+      "owl:disjointWith" (translateDisjointWith predicateMap)
       ;object property  axioms
       "rdfs:subPropertyOf" (translateSubObjectPropertyOf predicateMap)
       "owl:propertyChainAxiom" (translateSubObjectPropertyOf predicateMap)
@@ -158,7 +166,7 @@
       "rdfs:range" (translateRange predicateMap)
       "owl:inverseOf" (translateInverseOf predicateMap)
       "rdf:type" (translateType predicateMap)
-      "Thin triple?"
+      (str "Thin triple?" predicateMap)
       ;TODO: data property axioms
       ;TODO: data type definitions
       ;TODO: keys
