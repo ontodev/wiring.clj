@@ -4,7 +4,7 @@
             [wiring.thick2ofn.parsing :as p]
             [clojure.spec.alpha :as spec]))
 
-;to do handle ABox vs TBox
+;TODO handle ABox vs TBox
 
 (defn triple?
   "Checks whether a map is a triple." 
@@ -49,13 +49,16 @@
   (and (thinTriple? triple)
        (= (:predicate triple) "rdfs:label")))
 
-(defn rdfTypingTriple?
+(defn typingTriple?
   "Checks whether a triple contains information about an entity's rdf:type."
   [triple]
   (= (:predicate triple) "rdf:type"))
-  ;(and (thinTriple? triple)
-  ;     (= (:predicate triple) "rdf:type")
-  ;     (rdfType? (:object triple)))) 
+
+(defn rdfTypingTriple?
+  "Checks whether a triple contains information about a standard RDF type"
+  [triple]
+  (and (typingTriple? triple)
+       (rdfType? (:object triple)))) 
 
 (defn updateSubject2info
   "Adds an element to a map."
