@@ -15,29 +15,29 @@
 {"subject": "ex:disjointUnion", "predicate": "owl:disjointUnionOf", "object": {"rdf:first": [{"object": "ex:u1"}], "rdf:rest": [{"object": {"rdf:first": [{"object": "ex:u2"}], "rdf:rest": [{"object": {"rdf:first": [{"object": "ex:u3"}], "rdf:rest": [{"object": "rdf:nil"}]}}]}}]}}
 {"subject": "ex:disjointUnion", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:exactCardinality", "predicate": "rdf:type", "object": "owl:Class"}
-{"subject": "ex:exactCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pExactCardinality"}], "owl:cardinality": [{"object": "2^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger"}]}}
+{"subject": "ex:exactCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pExactCardinality"}], "owl:cardinality": [{"object": "2^^xsd:nonNegativeInteger"}]}}
 {"subject": "ex:exactQualifiedCardinality", "predicate": "rdf:type", "object": "owl:Class"}
-{"subject": "ex:exactQualifiedCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pExactQualifiedCardinality"}], "owl:qualifiedCardinality": [{"object": "2^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger"}], "owl:onClass": [{"object": "ex:exactQualifiedCardinalityFiller"}]}}
+{"subject": "ex:exactQualifiedCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pExactQualifiedCardinality"}], "owl:qualifiedCardinality": [{"object": "2^^xsd:nonNegativeInteger"}], "owl:onClass": [{"object": "ex:exactQualifiedCardinalityFiller"}]}}
 {"subject": "ex:exactQualifiedCardinalityFiller", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:existential", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:existential", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pExistential"}], "owl:someValuesFrom": [{"object": "ex:existentialFiller"}]}}
 {"subject": "ex:existentialFiller", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:hasSelf", "predicate": "rdf:type", "object": "owl:Class"}
-{"subject": "ex:hasSelf", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pHasSelf"}], "owl:hasSelf": [{"object": "true^^<http://www.w3.org/2001/XMLSchema#boolean"}]}}
+{"subject": "ex:hasSelf", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pHasSelf"}], "owl:hasSelf": [{"object": "true^^xsd:boolean"}]}}
 {"subject": "ex:hasValue", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:hasValue", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pHasValue"}], "owl:hasValue": [{"object": "ex:a1"}]}}
 {"subject": "ex:intersection", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:intersection", "predicate": "rdfs:subClassOf", "object": {"owl:intersectionOf": [{"object": {"rdf:first": [{"object": "ex:I1"}], "rdf:rest": [{"object": {"rdf:first": [{"object": "ex:I2"}], "rdf:rest": [{"object": {"rdf:first": [{"object": "ex:I3"}], "rdf:rest": [{"object": "rdf:nil"}]}}]}}]}}], "rdf:type": [{"object": "owl:Class"}]}}
 {"subject": "ex:maxCardinality", "predicate": "rdf:type", "object": "owl:Class"}
-{"subject": "ex:maxCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pMaxCardinality"}], "owl:maxCardinality": [{"object": "1^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger"}]}}
+{"subject": "ex:maxCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pMaxCardinality"}], "owl:maxCardinality": [{"object": "1^^xsd:nonNegativeInteger"}]}}
 {"subject": "ex:maxCardinalityFiller", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:maxQualifiedCardinality", "predicate": "rdf:type", "object": "owl:Class"}
-{"subject": "ex:maxQualifiedCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pMaxQualifiedCardinality"}], "owl:maxQualifiedCardinality": [{"object": "1^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger"}], "owl:onClass": [{"object": "ex:maxCardinalityFiller"}]}}
-{"subject": "ex:minCardinality", "predicate": "owl:equivalentClass", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pMinCardinality"}], "owl:minCardinality": [{"object": "1^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger"}]}}
+{"subject": "ex:maxQualifiedCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pMaxQualifiedCardinality"}], "owl:maxQualifiedCardinality": [{"object": "1^^xsd:nonNegativeInteger"}], "owl:onClass": [{"object": "ex:maxCardinalityFiller"}]}}
+{"subject": "ex:minCardinality", "predicate": "owl:equivalentClass", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pMinCardinality"}], "owl:minCardinality": [{"object": "1^^xsd:nonNegativeInteger"}]}}
 {"subject": "ex:minCardinality", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:minCardinalityFiller", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:minQualifiedCardinality", "predicate": "rdf:type", "object": "owl:Class"}
-{"subject": "ex:minQualifiedCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pMinQualifiedCardinality"}], "owl:minQualifiedCardinality": [{"object": "1^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger"}], "owl:onClass": [{"object": "ex:minCardinalityFiller"}]}}
+{"subject": "ex:minQualifiedCardinality", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Restriction"}], "owl:onProperty": [{"object": "ex:pMinQualifiedCardinality"}], "owl:minQualifiedCardinality": [{"object": "1^^xsd:nonNegativeInteger"}], "owl:onClass": [{"object": "ex:minCardinalityFiller"}]}}
 {"subject": "ex:oneOf", "predicate": "rdf:type", "object": "owl:Class"}
 {"subject": "ex:oneOf", "predicate": "rdfs:subClassOf", "object": {"rdf:type": [{"object": "owl:Class"}], "owl:oneOf": [{"object": {"rdf:first": [{"object": "ex:a1"}], "rdf:rest": [{"object": {"rdf:first": [{"object": "ex:a2"}], "rdf:rest": [{"object": {"rdf:first": [{"object": "ex:a3"}], "rdf:rest": [{"object": "rdf:nil"}]}}]}}]}}]}}
 {"subject": "ex:pExactCardinality", "predicate": "rdf:type", "object": "owl:ObjectProperty"}
