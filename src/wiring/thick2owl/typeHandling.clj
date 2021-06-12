@@ -3,9 +3,11 @@
             [clojure.string :as s]
             [cheshire.core :as cs]
             [wiring.util.ofnExpressions :as ofnExpressions]
+            [wiring.thick2ofn.util :as ofnUtil];TODO: refactor this
             [clojure.spec.alpha :as spec]))
 
 (declare translate)
+;TODO use ofnFormat
 
 (defn id
   "Identity function for OFN-S expressions."
@@ -14,9 +16,7 @@
     (str \" ofn \")
     (let [[operator & arguments] ofn
            args (map #(translate % subject2type) arguments)
-           commas (interpose, "," args)
-           stringArgs (apply str commas)
-           op (str "[\"" operator "\"," stringArgs "]")]
+           op (ofnUtil/ofsFormat operator (apply ofnUtil/ofsFormatNoBrackets args))]
       op))) 
 
 (defn translateSomeValuesFrom 
@@ -26,10 +26,12 @@
         classExpression (or (contains? (get subject2type property) "owl:ObjectProperty")
                             (contains? (get subject2type filler) "owl:Class"))
         datatypeExpression (or (contains? (get subject2type property) "owl:DatatypeProperty")
-                               (contains? (get subject2type filler) "rdfs:Datatype"))]
-    (cond classExpression (str "[ObjectSomeValuesFrom,\"" property "\",\"" filler "\"]")
-          datatypeExpression (str "[DataSomeValuesFrom,\"" property "\",\"" filler "\"]")
-          :else (str "[ErrorSomeValuesFrom,\"" property "\",\"" filler "\"]"))))
+                               (contains? (get subject2type filler) "rdfs:Datatype"))
+        property (str "\"" property "\""); wrap internal representation into strings for JSON
+        filler (str "\"" filler "\"")]
+    (cond classExpression (ofnUtil/ofsFormat "ObjectSomeValuesFrom" property filler)
+          datatypeExpression (ofnUtil/ofsFormat "DataSomeValuesFrom" property filler)
+          :else (ofnUtil/ofsFormat "ErrorSomeValuesFrom" property filler))))
 
 (defn translateAllValuesFrom 
   "Translate an untyped universal expression."
@@ -38,10 +40,12 @@
         classExpression (or (contains? (get subject2type property) "owl:ObjectProperty")
                             (contains? (get subject2type filler) "owl:Class"))
         datatypeExpression (or (contains? (get subject2type property) "owl:DatatypeProperty")
-                               (contains? (get subject2type filler) "rdfs:Datatype"))]
-    (cond classExpression (str "[ObjectAllValuesFrom,\"" property "\",\"" filler "\"]")
-          datatypeExpression (str "[DataAllValuesFrom,\"" property "\",\"" filler "\"]")
-          :else (str "[ErrorAllValuesFrom,\"" property "\",\"" filler "\"]"))))
+                               (contains? (get subject2type filler) "rdfs:Datatype"))
+        property (str "\"" property "\""); wrap internal representation into strings for JSON
+        filler (str "\"" filler "\"")]
+    (cond classExpression (ofnUtil/ofsFormat "ObjectAllValuesFrom" property filler)
+          datatypeExpression (ofnUtil/ofsFormat "DataAllValuesFrom" property filler)
+          :else (ofnUtil/ofsFormat "ErrorAllValuesFrom" property filler))))
 
 (defn translateHasValue
   "Translate an untyped hasValue expression."
@@ -49,40 +53,48 @@
   (let [[op property filler] ofn;filler is a literal or an individual
         classExpression (or  (contains? (get subject2type property) "owl:ObjectProperty")
                             (contains? (get subject2type filler) "owl:NamedIndividual"))
-        datatypeExpression (contains? (get subject2type property) "owl:DatatypeProperty")]
-    (cond classExpression (str "[ObjectHasValue,\"" property "\",\"" filler "\"]")
-          datatypeExpression (str "[DataHasValue,\"" property "\",\"" filler "\"]")
-          :else (str "[ErrorHasValue,\"" property "\",\"" filler "\"]"))))
+        datatypeExpression (contains? (get subject2type property) "owl:DatatypeProperty")
+        property (str "\"" property "\""); wrap internal representation into strings for JSON
+        filler (str "\"" filler "\"")] 
+    (cond classExpression (ofnUtil/ofsFormat "ObjectHasValue" property filler)
+          datatypeExpression (ofnUtil/ofsFormat "DataHasValue" property filler)
+          :else (ofnUtil/ofsFormat "ErrorHasValue" property filler))))
 
 (defn translateMinCardinality
   "Translate an untyped MinCardinality expression."
   [ofn subject2type]
   (let [[op cardinality property] ofn
         classExpression (contains? (get subject2type property) "owl:ObjectProperty")
-        datatypeExpression (contains? (get subject2type property) "owl:DatatypeProperty")]
-    (cond classExpression (str "[ObjectMinCardinality,\"" cardinality "\",\"" property "\"]")
-          datatypeExpression (str "[DataMinCardinality,\"" cardinality "\",\"" property "\"]")
-          :else (str "[ErrorMinCardinality,\"" cardinality "\",\"" property "\"]"))))
+        datatypeExpression (contains? (get subject2type property) "owl:DatatypeProperty")
+        property (str "\"" property "\""); wrap internal representation into strings for JSON
+        cardinality (str "\"" cardinality "\"")] 
+    (cond classExpression (ofnUtil/ofsFormat "ObjectMinCardinality" cardinality property)
+          datatypeExpression (ofnUtil/ofsFormat "DataMinCardinality" cardinality property)
+          :else (ofnUtil/ofsFormat "ErrorMinCardinality" cardinality property))))
 
 (defn translateMaxCardinality
   "Translate an untyped MaxCardinality expression."
   [ofn subject2type]
   (let [[op cardinality property] ofn
         classExpression (contains? (get subject2type property) "owl:ObjectProperty")
-        datatypeExpression (contains? (get subject2type property) "owl:DatatypeProperty")]
-    (cond classExpression (str "[ObjectMaxCardinality,\"" cardinality "\",\"" property "\"]")
-          datatypeExpression (str "[DataMaxCardinality,\"" cardinality "\",\"" property "\"]")
-          :else (str "[ErrorMaxCardinality,\"" cardinality "\",\"" property "\"]"))))
+        datatypeExpression (contains? (get subject2type property) "owl:DatatypeProperty")
+        property (str "\"" property "\""); wrap internal representation into strings for JSON
+        cardinality (str "\"" cardinality "\"")] 
+    (cond classExpression (ofnUtil/ofsFormat "ObjectMaxCardinality" cardinality property)
+          datatypeExpression (ofnUtil/ofsFormat "DataMaxCardinality" cardinality property)
+          :else (ofnUtil/ofsFormat "ErrorMaxCardinality" cardinality property))))
 
 (defn translateExactCardinality
   "Translate an untyped ExactCardinality expression."
   [ofn subject2type]
   (let [[op cardinality property] ofn
         classExpression (contains? (get subject2type property) "owl:ObjectProperty")
-        datatypeExpression (contains? (get subject2type property) "owl:DatatypeProperty")]
-    (cond classExpression (str "[ObjectExactCardinality,\"" cardinality "\",\"" property "\"]")
-          datatypeExpression (str "[DataExactCardinality,\"" cardinality "\",\"" property "\"]")
-          :else (str "[ErrorExactCardinality,\"" cardinality "\",\"" property "\"]")))) 
+        datatypeExpression (contains? (get subject2type property) "owl:DatatypeProperty")
+        property (str "\"" property "\""); wrap internal representation into strings for JSON
+        cardinality (str "\"" cardinality "\"")] 
+    (cond classExpression (ofnUtil/ofsFormat "ObjectExactCardinality" cardinality property)
+          datatypeExpression (ofnUtil/ofsFormat "DataExactCardinality" cardinality property)
+          :else (ofnUtil/ofsFormat "ErrorExactCardinality" cardinality property)))) 
 
 ;gets an OFN S-Exression and a typing map 
 (defn translate
