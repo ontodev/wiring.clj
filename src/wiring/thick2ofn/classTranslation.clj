@@ -239,6 +239,9 @@
 ;;             Translation Mechanism
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;Note: this should only be called for RDF lists because that's the only
+;predicate map that doesn't come with a type (and is not a named entity)
+;but it would also be possible to have missing type information in predicate maps
 (defn translateUntyped [predicates]
   "Translate expressions without rdf:type information."
   (let [classAttempt (translateClass predicates);returns nil if no translation is performed
