@@ -23,6 +23,7 @@
       "ObjectUnionOf" false
       "ObjectOneOf" false
       "ObjectComplementOf" false
+      "ObjectHasSelf" false
       true)))
 
 ;determine type first
@@ -326,10 +327,9 @@
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer " value "
-     fill (translate filler subject2label "owl:someValuesFrom")]
+     fill (translate filler subject2label "owl:hasValue")]
      (renderRestriction opening prop modifer fill))))
 
-;TODO test this
 (defn translateObjectHasSelf
   "Translate a ObjectHasValue expression"
   ([ofn subject2label]
@@ -337,7 +337,7 @@
      opening (spanOpening ofn)
      prop (property/translate property subject2label "owl:onProperty")
      modifer " some Self "
-     fill (str "<span property=\"hasSelf\">\"true\"^^xsd:boolean</span>")]
+     fill (str "<span property=\"owl:hasSelf\">\"true\"^^xsd:boolean</span>")]
      (renderRestriction opening prop modifer fill))) 
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
@@ -345,7 +345,7 @@
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer " some Self "
-     fill (str "<span property=\"hasSelf\">\"true\"^^xsd:boolean</span>")] 
+     fill (str "<span property=\"owl:hasSelf\">\"true\"^^xsd:boolean</span>")] 
      (renderRestriction opening prop modifer fill))))
 
 (defn translateObjectIntersection
@@ -386,7 +386,6 @@
         htmlClosing (str unionClosing  "</span>")]
     htmlClosing))) 
 
-;TODO test this
 (defn translateObjectOneOf
   "Translate an ObjectOneOf expression"
 ([ofn subject2label] 
