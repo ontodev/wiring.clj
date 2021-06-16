@@ -338,7 +338,7 @@
      opening (spanOpening ofn)
      prop (property/translate property subject2label "owl:onProperty")
      modifer " some Self "
-     fill (str "<span property=\"owl:hasSelf\">\"true\"^^xsd:boolean</span>")]
+     fill (str "<span property=\"owl:hasSelf\" hidden="true">\"true\"^^xsd:boolean</span>")]
      (renderRestriction opening prop modifer fill))) 
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
@@ -346,7 +346,7 @@
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer " some Self "
-     fill (str "<span property=\"owl:hasSelf\">\"true\"^^xsd:boolean</span>")] 
+     fill (str "<span property=\"owl:hasSelf\" hidden="true">\"true\"^^xsd:boolean</span>")] 
      (renderRestriction opening prop modifer fill))))
 
 (defn translateObjectIntersection
