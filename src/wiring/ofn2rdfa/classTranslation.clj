@@ -104,9 +104,10 @@
 
 (defn translateList
   "Translate class expressions into an RDF list"
-  [expressions subject2label]
+  [expressions subject2label htmlMarkup]
   (loop [in (rest (reverse expressions));constructing list from last element to first
          out (str "<span property=\"rdf:rest\" typeof=\"owl:Class\"> "
+                 htmlMarkup " " 
                  (translate (first (reverse expressions)) subject2label "rdf:first")
                   " <span resource=\"rdf:nil\" property=\"rdf:rest\"></span>"
                   "</span>")]
@@ -116,7 +117,7 @@
              (if (empty? (rest in))
                (str (translate (first in) subject2label "rdf:first") " " out) 
                (str "<span property=\"rdf:rest\" typeof=\"owl:Class\"> "
-               (translate (first in) subject2label "rdf:first") " " out
+                htmlMarkup " " (translate (first in) subject2label "rdf:first") " " out
                " </span>"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -353,17 +354,17 @@
   ([ofn subject2label]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn) 
-        intersectionClass (str htmlOpening  "<span property=\"owl:intersectionOf\" typeof=\"owl:Class\"> ")
-        operands (str intersectionClass (translateList arguments subject2label))
-        intersectionClosing  (str operands "</span>")
+        intersectionClass (str htmlOpening  "(<span property=\"owl:intersectionOf\" typeof=\"owl:Class\"> ")
+        operands (str intersectionClass (translateList arguments subject2label "and"))
+        intersectionClosing  (str operands "</span>)")
         htmlClosing (str intersectionClosing "</span>")]
     htmlClosing)) 
   ([ofn subject2label propertyRDFa]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn propertyRDFa)
-        intersectionClass (str htmlOpening  "<span property=\"owl:intersectionOf\" typeof=\"owl:Class\"> ")
-        operands (str intersectionClass (translateList arguments subject2label))
-        intersectionClosing  (str operands "</span>")
+        intersectionClass (str htmlOpening  "(<span property=\"owl:intersectionOf\" typeof=\"owl:Class\"> ")
+        operands (str intersectionClass (translateList arguments subject2label "and"))
+        intersectionClosing  (str operands "</span>)")
         htmlClosing (str intersectionClosing  "</span>")]
     htmlClosing))) 
 
@@ -372,17 +373,17 @@
   ([ofn subject2label]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn) 
-        unionClass (str htmlOpening  "<span property=\"owl:unionOf\" typeof=\"owl:Class\"> ")
-        operands (str unionClass (translateList arguments subject2label))
-        unionClosing  (str operands "</span>")
+        unionClass (str htmlOpening  "(<span property=\"owl:unionOf\" typeof=\"owl:Class\"> ")
+        operands (str unionClass (translateList arguments subject2label "or"))
+        unionClosing  (str operands "</span>)")
         htmlClosing (str unionClosing "</span>")]
     htmlClosing)) 
   ([ofn subject2label propertyRDFa]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn propertyRDFa)
-        unionClass (str htmlOpening  "<span property=\"owl:unionOf\" typeof=\"owl:Class\"> ")
-        operands (str unionClass (translateList arguments subject2label))
-        unionClosing  (str operands "</span>")
+        unionClass (str htmlOpening  "(<span property=\"owl:unionOf\" typeof=\"owl:Class\"> ")
+        operands (str unionClass (translateList arguments subject2label "or"))
+        unionClosing  (str operands "</span>)")
         htmlClosing (str unionClosing  "</span>")]
     htmlClosing))) 
 
@@ -392,7 +393,7 @@
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn) 
         oneOf (str htmlOpening  "<span property=\"owl:oneOf\" typeof=\"owl:Class\"> ")
-        operands (str oneOf (translateList arguments subject2label))
+        operands (str oneOf (translateList arguments subject2label ""))
         unionClosing  (str operands "</span>")
         htmlClosing (str unionClosing "</span>")]
     htmlClosing)) 
@@ -400,7 +401,7 @@
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn propertyRDFa)
         oneOf (str htmlOpening  "<span property=\"owl:oneOf\" typeof=\"owl:Class\"> ")
-        operands (str oneOf (translateList arguments subject2label))
+        operands (str oneOf (translateList arguments subject2label ""))
         unionClosing  (str operands "</span>")
         htmlClosing (str unionClosing  "</span>")]
     htmlClosing))) 
