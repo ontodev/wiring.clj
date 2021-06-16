@@ -108,7 +108,7 @@
   (loop [in (rest (reverse expressions));constructing list from last element to first
          out (str "<span property=\"rdf:rest\" typeof=\"owl:Class\"> "
                  (translate (first (reverse expressions)) subject2label "rdf:first")
-                  " <span resource=\"rdf:nil\" property=\"rdf:rest\"> rdf:nil</span>"
+                  " <span resource=\"rdf:nil\" property=\"rdf:rest\"></span>"
                   "</span>")]
     (if (empty? in)
       out
