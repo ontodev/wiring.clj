@@ -392,17 +392,17 @@
 ([ofn subject2label] 
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn) 
-        oneOf (str htmlOpening  "<span property=\"owl:oneOf\" typeof=\"owl:Class\"> ")
+        oneOf (str htmlOpening  "{<span property=\"owl:oneOf\" typeof=\"owl:Class\"> ")
         operands (str oneOf (translateList arguments subject2label ""))
-        unionClosing  (str operands "</span>")
+        unionClosing  (str operands "</span>}")
         htmlClosing (str unionClosing "</span>")]
     htmlClosing)) 
   ([ofn subject2label propertyRDFa]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn propertyRDFa)
-        oneOf (str htmlOpening  "<span property=\"owl:oneOf\" typeof=\"owl:Class\"> ")
+        oneOf (str htmlOpening  "{<span property=\"owl:oneOf\" typeof=\"owl:Class\"> ")
         operands (str oneOf (translateList arguments subject2label ""))
-        unionClosing  (str operands "</span>")
+        unionClosing  (str operands "</span>}")
         htmlClosing (str unionClosing  "</span>")]
     htmlClosing))) 
 
