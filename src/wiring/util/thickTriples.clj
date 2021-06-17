@@ -24,6 +24,19 @@
 ;{:subject obo:OBI_0000958, :predicate rdf:type, :object {:owl:onProperty obo:IAO_0000219, :rdf:type owl:Restriction, :owl:someValuesFrom obo:PATO_0002203}} - this is an ABox axiom. But we don't translate them yet. So the translation mechanism will return the empty string for this.
 ;so for the time being, I will just filter them out here
 
+(defn thinSubClassOf?
+  [triple]
+  (and (triple? triple)
+       (= (:predicate triple) "rdfs:subClassOf")))
+
+(defn classAxiom?
+  [triple]
+  (and (triple? triple)
+       (or
+         (= (:predicate triple) "rdfs:subClassOf")
+         (= (:predicate triple) "owl:disjointUnionOf")
+         (= (:predicate triple) "owl:equivalentClass")
+         (= (:predicate triple) "owl:AllDisjointClasses")))) 
 
 (defn thinTriple?
   "Checks whether a triple is a thin triple." 
