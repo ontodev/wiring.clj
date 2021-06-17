@@ -102,7 +102,7 @@
   (let [[op lhs rhs] ofn
         opening (spanOpening lhs)
         lhs (str opening " " (classTranslation/translate lhs subject2label))
-        subclass (str lhs " disjointWith ")
+        subclass (str lhs " DisjointWith ")
         rhs (str subclass (classTranslation/translate rhs subject2label "owl:disjointWith"))
         closing (str rhs " </span>")]
     closing)) 
@@ -114,6 +114,20 @@
     (translateBinaryDisjointClasses ofn subject2label)
     (translateNaryDisjointClasses ofn subject2label)))
 
+(defn translateDisjointUnion
+  "Translate a DisjointUnion axiom"
+  [ofn subject2label]
+  (let [[operator lhs & arguments] ofn 
+        opening (spanOpening lhs)
+        lhs (str opening " " (classTranslation/translate lhs subject2label))
+        disjointUnion (str lhs " DisjointUnionOf(")
+        classOpening (str disjointUnion "<span typeof=\"owl:Class\" property=\"owl:disjointUnionOf\">") 
+        operands (str classOpening (translateList arguments subject2label ","))
+        classClosing (str operands " </span>")
+
+        closing (str classClosing " </span>)")]
+    closing))
+
 (defn translate
   "Translate OFN-S expression to tick triple"
   [ofn subject2label]
@@ -122,7 +136,7 @@
     (case operator
       ;class expression axioms
       "SubClassOf" (translateSubclassOf ofn subject2label)
-      ;"DisjointUnion" (translateDisjointUnion ofn)
+      "DisjointUnion" (translateDisjointUnion ofn subject2label)
       "DisjointClasses" (translateDisjointClasses ofn subject2label) 
       ;"EquivalentClasses" (translateEquivalentClasses ofn) 
       ;;object property  axioms
