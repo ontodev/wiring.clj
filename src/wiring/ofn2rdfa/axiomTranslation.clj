@@ -128,6 +128,36 @@
         closing (str classClosing " </span>)")]
     closing))
 
+
+(defn translateTwoEquivalentClasses
+  "Translate a two equivalent classes"
+  [classes subject2label]
+  (let [[lhs rhs] classes
+        opening (spanOpening lhs)
+        lhs (str opening " " (classTranslation/translate lhs subject2label))
+        subclass (str lhs " Equivalent to ")
+        rhs (str subclass (classTranslation/translate rhs subject2label "owl:equivalentClass"))
+        closing (str rhs " </span>")]
+    closing))
+
+
+;Note that this translates an EquivalentClasses axiom of the form
+;[EquivalentClasses a b c d e]
+;into 
+;a owl:equivalentClass b
+;b owl:equivalentClass c
+;c owl:equivalentClass d
+;d owl:equivalentClass e
+(defn translateEquivalentClasses
+  "Translate a DisjointClasses axiom"
+  [ofn subject2label]
+  (let [[operator & arguments] ofn
+         pairs (keep #(if (= 2 (count %)) %) (partition-all 2 1 arguments))
+         html (map #(translateTwoEquivalentClasses % subject2label) pairs)
+         spaces (interpose, " <br> " html)
+         string (apply str spaces)]
+    string)) 
+
 (defn translate
   "Translate OFN-S expression to tick triple"
   [ofn subject2label]
@@ -138,7 +168,7 @@
       "SubClassOf" (translateSubclassOf ofn subject2label)
       "DisjointUnion" (translateDisjointUnion ofn subject2label)
       "DisjointClasses" (translateDisjointClasses ofn subject2label) 
-      ;"EquivalentClasses" (translateEquivalentClasses ofn) 
+      "EquivalentClasses" (translateEquivalentClasses ofn subject2label) 
       ;;object property  axioms
       ;"rdfs:subPropertyOf" (translateSubObjectPropertyOf predicateMap)
       ;"owl:propertyChainAxiom" (translateSubObjectPropertyOf predicateMap)
