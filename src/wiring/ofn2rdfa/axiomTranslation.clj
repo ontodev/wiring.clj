@@ -58,7 +58,7 @@
   "Translate class expressions into an RDF list"
   [expressions subject2label htmlMarkup]
   (loop [in (rest (reverse expressions));constructing list from last element to first
-         out (str "<span property=\"rdf:rest\" typeof=\"owl:Class\"> " 
+         out (str "<span property=\"rdf:rest\" typeof=\"rdf:List\"> " 
                  htmlMarkup " " 
                  (classTranslation/translate (first (reverse expressions)) subject2label "rdf:first")
                   " <span resource=\"rdf:nil\" property=\"rdf:rest\"></span>"
@@ -68,7 +68,7 @@
       (recur (rest in)
              (if (empty? (rest in))
                (str (classTranslation/translate (first in) subject2label "rdf:first") " " out) 
-               (str "<span property=\"rdf:rest\" typeof=\"owl:Class\"> "
+               (str "<span property=\"rdf:rest\" typeof=\"rdf:List\"> "
                 htmlMarkup " " (classTranslation/translate (first in) subject2label "rdf:first") " " out
                " </span>"))))))
 
@@ -89,7 +89,7 @@
   ;note that this is not Manchester Syntax (because that is based on class frames rather than axioms)
   (let [[operator & arguments] ofn
       axiomOpening (str "DisjointClasses(<span typeof=\"owl:AllDisjointClasses\">")
-      classOpening (str axiomOpening "<span typeof=\"owl:Class\" property=\"owl:members\">") 
+      classOpening (str axiomOpening "<span typeof=\"rdf:List\" property=\"owl:members\">") 
       operands (str classOpening (translateList arguments subject2label ","))
       classClosing (str operands  " </span>")
       axiomClosing (str classClosing " </span>)")]
@@ -121,7 +121,7 @@
         opening (spanOpening lhs)
         lhs (str opening " " (classTranslation/translate lhs subject2label))
         disjointUnion (str lhs " DisjointUnionOf(")
-        classOpening (str disjointUnion "<span typeof=\"owl:Class\" property=\"owl:disjointUnionOf\">") 
+        classOpening (str disjointUnion "<span typeof=\"rdf:List\" property=\"owl:disjointUnionOf\">") 
         operands (str classOpening (translateList arguments subject2label ","))
         classClosing (str operands " </span>")
 
