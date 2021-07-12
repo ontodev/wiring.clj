@@ -1,10 +1,9 @@
-(ns wiring.ofn2rdfa.axiomTranslation
+(ns wiring.ofn2hiccup.axiomTranslation
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
+            [hiccup.core :as hicc]
             [clojure.spec.alpha :as spec]
-            [wiring.ofn2rdfa.classTranslation :as classTranslation]))
-            ;[wiring.thick2man.util :as util]
-            ;[wiring.thick2man.spec :as owlspec]))
+            [wiring.ofn2hiccup.classTranslation :as classTranslation]))
 
 ;TODO data validation
 (declare translate)
@@ -47,65 +46,65 @@
       "ObjectComplementOf" "owl:Class"
       ofn)));return input as named class
 
+;HICCUP
 (defn spanOpening
   "Determines the opening span for an RDFa serialistion."  
   [input]
 (if (namedClass? input)
-  (str "<span about=" \" input \" ">")
-  (str "<span typeof=" \"  (getType input) \" ">")))
+  {:about input}
+  {:typeof (getType input)})) 
 
+;;HICCUP 
 (defn translateList
   "Translate class expressions into an RDF list"
   [expressions subject2label htmlMarkup]
   (loop [in (rest (reverse expressions));constructing list from last element to first
-         out (str "<span property=\"rdf:rest\" typeof=\"rdf:List\"> " 
-                 htmlMarkup " " 
-                 (classTranslation/translate (first (reverse expressions)) subject2label "rdf:first")
-                  " <span resource=\"rdf:nil\" property=\"rdf:rest\"></span>"
-                  "</span>")]
+         out [:span {:property "rdf:rest", :typeof "rdf:List"}
+                    htmlMarkup 
+                    " "
+                   (classTranslation/translate (first (reverse expressions)) subject2label "rdf:first")
+                   [:span {:resource "rdf:nil", :property "rdf:rest"}]]]
     (if (empty? in)
       out
       (recur (rest in)
              (if (empty? (rest in))
-               (str (classTranslation/translate (first in) subject2label "rdf:first") " " out) 
-               (str "<span property=\"rdf:rest\" typeof=\"rdf:List\"> "
-                htmlMarkup " " (classTranslation/translate (first in) subject2label "rdf:first") " " out
-               " </span>"))))))
+               ;(conj out (classTranslation/translate (first in) subject2label "rdf:first"))
+               [:span (classTranslation/translate (first in) subject2label "rdf:first") out]
+               [:span {:property "rdf:rest", :typeof "rdf:List"}
+                      htmlMarkup
+                      " "
+                      (classTranslation/translate (first in) subject2label "rdf:first")
+                      out])))))
 
 (defn translateSubclassOf
   "Translate a SubClassOf axiom"
   [ofn subject2label]
   (let [[op lhs rhs] ofn
         opening (spanOpening lhs)
-        lhs (str opening " " (classTranslation/translate lhs subject2label))
-        subclass (str lhs " SubClassOf ")
-        rhs (str subclass (classTranslation/translate rhs subject2label "rdfs:subClassOf"))
-        closing (str rhs " </span>")]
-    closing))
+        subclass (classTranslation/translate lhs subject2label)
+        superclass(classTranslation/translate rhs subject2label "rdfs:subClassOf")]
+    [:span opening subclass " SubClassOf " superclass]))
 
 (defn translateNaryDisjointClasses
   "Translate a DisjointClasses axiom"
   [ofn subject2label]
   ;note that this is not Manchester Syntax (because that is based on class frames rather than axioms)
   (let [[operator & arguments] ofn
-      axiomOpening (str "DisjointClasses(<span typeof=\"owl:AllDisjointClasses\">")
-      classOpening (str axiomOpening "<span typeof=\"rdf:List\" property=\"owl:members\">") 
-      operands (str classOpening (translateList arguments subject2label ","))
-      classClosing (str operands  " </span>")
-      axiomClosing (str classClosing " </span>)")]
-    axiomClosing))
+      operands (translateList arguments subject2label ",")]
+    [:div "DisjointClasses("
+      [:span {:typeof "owl:AllDisjointClasses"}
+             [:span {:typeof "rdf:List", :property "owl:members"}
+                    operands]]
+     ")"])) 
 
-;TODO test this
 (defn translateBinaryDisjointClasses
   "Translate a DisjointClasses axiom"
   [ofn subject2label]
   (let [[op lhs rhs] ofn
         opening (spanOpening lhs)
-        lhs (str opening " " (classTranslation/translate lhs subject2label))
-        subclass (str lhs " DisjointWith ")
-        rhs (str subclass (classTranslation/translate rhs subject2label "owl:disjointWith"))
-        closing (str rhs " </span>")]
-    closing)) 
+        lhs (classTranslation/translate lhs subject2label)
+        rhs (classTranslation/translate rhs subject2label "owl:disjointWith")]
+    [:span opening lhs " DisjointWith " rhs]))
 
 (defn translateDisjointClasses
   "Translate a DisjointClasses axiom"
@@ -119,14 +118,9 @@
   [ofn subject2label]
   (let [[operator lhs & arguments] ofn 
         opening (spanOpening lhs)
-        lhs (str opening " " (classTranslation/translate lhs subject2label))
-        disjointUnion (str lhs " DisjointUnionOf(")
-        classOpening (str disjointUnion "<span typeof=\"rdf:List\" property=\"owl:disjointUnionOf\">") 
-        operands (str classOpening (translateList arguments subject2label ","))
-        classClosing (str operands " </span>")
-
-        closing (str classClosing " </span>)")]
-    closing))
+        lhs (classTranslation/translate lhs subject2label)
+        operands (translateList arguments subject2label ",")]
+    [:span opening lhs " DisjointUnionOf("  [:span {:typeof "rdf:List", :property "owl:disjointUnionOf"} operands ")"]]))
 
 
 (defn translateTwoEquivalentClasses
@@ -134,12 +128,9 @@
   [classes subject2label]
   (let [[lhs rhs] classes
         opening (spanOpening lhs)
-        lhs (str opening " " (classTranslation/translate lhs subject2label))
-        subclass (str lhs " Equivalent to ")
-        rhs (str subclass (classTranslation/translate rhs subject2label "owl:equivalentClass"))
-        closing (str rhs " </span>")]
-    closing))
-
+        left (classTranslation/translate lhs subject2label)
+        right (classTranslation/translate rhs subject2label "owl:equivalentClass")]
+    [:span opening left " Equivalent to " right]))
 
 ;Note that this translates an EquivalentClasses axiom of the form
 ;[EquivalentClasses a b c d e]
@@ -154,15 +145,13 @@
   (let [[operator & arguments] ofn
          pairs (keep #(if (= 2 (count %)) %) (partition-all 2 1 arguments))
          html (map #(translateTwoEquivalentClasses % subject2label) pairs)
-         spaces (interpose, " <br> " html)
-         string (apply str spaces)]
-    string)) 
+         spaces (interpose, [:br] html)]
+    spaces)) 
 
 (defn translate
   "Translate OFN-S expression to tick triple"
   [ofn subject2label]
   (let [operator (first ofn)];
-    ;(println predicateMap)
     (case operator
       ;class expression axioms
       "SubClassOf" (translateSubclassOf ofn subject2label)

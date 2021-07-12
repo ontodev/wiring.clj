@@ -1,8 +1,7 @@
-(ns wiring.ofn2rdfa.classTranslation
+(ns wiring.ofn2hiccup.classTranslation
   (:require [clojure.repl :as repl]
             [clojure.java.io :as io]
             [wiring.ofn2rdfa.propertyTranslation :as property])
-            ;[wiring.thick2ofn.spec :as spec])
   (:gen-class))
 
 ;TODO data validation
@@ -56,45 +55,32 @@
 (defn baseTranslation 
   "Translate a (named) class expression"
   ([namedClass subject2label] ;no property given
-  (let [href "<a href"
-        entity (str href "=" \" namedClass \")
-        prop (str entity ">")
-        label (str prop (labelSubstitution namedClass subject2label))
-        closing (str label "</a>")]
-    closing))
-
+  (let [label (labelSubstitution namedClass subject2label)]
+    [:a {:href namedClass} label]))
+   
   ([namedClass subject2label property]
-  (let [href "<a href"
-        entity (str href "=" \" namedClass \")
-        prop (str entity " property=\"" property \" ">")
-        label (str prop (labelSubstitution namedClass subject2label))
-        closing (str label "</a>")]
-    closing)))
+  (let [label (labelSubstitution namedClass subject2label)]
+    [:a {:href namedClass, :property property} label])))
 
 (defn spanOpening
   "Determines the opening span for an RDFa serialistion."  
   ([input]
-  (if (namedClass? input)
-    (str "<span about=" \" input \" ">")
-    (str "<span typeof=" \"  (getType input) \" ">")))
+  (if (namedClass? input) 
+    {:about input}
+    {:typeof (getType input)})) 
   ([input property];RDFa property argument from parent call
    (if (namedClass? input)
-     (str "<span property=" \" property \" " about=" \" input \" ">")
-     (str "<span property=" \" property \" " typeof=" \"  (getType input) \" ">"))))
-
+      {:about input, :property property}
+      {:typeof (getType input), :property property}))) 
 
 (defn renderRestriction 
   "Renders a class restriction" 
-  [span property modifer filler]
-  (let [htmlOpen "(" ;this is a compound expression - so it needs to be put in parenthesis
-       opening (str htmlOpen span)
-       prop (str opening " " property)
-       via (str prop modifer)
-       fill (str via filler)
-       closing (str fill " </span>")
-       htmlClosing (str closing ")")]
-    htmlClosing))
-
+  ;restrictions
+  ([spanOpening property modifer filler]
+   [:div "(" [:span spanOpening property modifer filler] ")"]) 
+  ;qualified cardinality restrictions
+  ([spanOpening property modifer card filler]
+   [:div "(" [:span spanOpening property modifer card " " filler] ")"])) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      RDF lists
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -106,19 +92,19 @@
   "Translate class expressions into an RDF list"
   [expressions subject2label htmlMarkup]
   (loop [in (rest (reverse expressions));constructing list from last element to first
-         out (str "<span property=\"rdf:rest\" typeof=\"rdf:List\"> "
-                 htmlMarkup " " 
-                 (translate (first (reverse expressions)) subject2label "rdf:first")
-                  " <span resource=\"rdf:nil\" property=\"rdf:rest\"></span>"
-                  "</span>")]
+         out [:span {:property "rdf:rest", :typeof "rdf:List"} 
+              " " htmlMarkup " "
+              (translate (first (reverse expressions)) subject2label "rdf:first")
+              [:span {:resource "rdf:nil", :property "rdf:rest"}]]]
     (if (empty? in)
       out
       (recur (rest in)
              (if (empty? (rest in))
-               (str (translate (first in) subject2label "rdf:first") " " out) 
-               (str "<span property=\"rdf:rest\" typeof=\"rdf:List\"> "
-                htmlMarkup " " (translate (first in) subject2label "rdf:first") " " out
-               " </span>"))))))
+               [:span (translate (first in) subject2label "rdf:first") out]
+               [:span {:property "rdf:rest", :typeof "rdf:List"} 
+                " " htmlMarkup " "
+                (translate (first in) subject2label "rdf:first")
+                out])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      Restrictions
@@ -166,9 +152,9 @@
   (let [[op cardinality property] ofn ;no parent RDFa property
      opening (spanOpening ofn)
      prop (property/translate property subject2label "owl:onProperty")
-     modifer (str " min ")
-     card (str "<span property=" \" "owl:minCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")]
-     ;fill (translate filler subject2label "owl:minCardinality")]
+     modifer (str " min ") 
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minCardinality"} number] ] 
      (renderRestriction opening prop modifer card)))
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
@@ -176,8 +162,8 @@
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " min ")
-     card (str "<span property=" \" "owl:minCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")]
-     ;fill (translate filler subject2label "owl:allValuesFrom")]
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minCardinality"} number] ]
      (renderRestriction opening prop modifer card))))
 
 (defn translateObjectMinQualifiedCardinality 
@@ -188,17 +174,19 @@
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " min ")
      fill (translate filler subject2label "owl:onClass")
-     card (str "<span property=" \" "owl:minQualifiedCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")]
-     (renderRestriction opening prop modifer (str card " " fill))))
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minQualifiedCardinality"} number]] 
+    (renderRestriction opening prop modifer card fill))) 
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
    (let [[op cardinality property filler] ofn
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " min ")
-     card (str "<span property=" \" "owl:minQualifiedCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")
-     fill (translate filler subject2label "owl:onClass")]
-     (renderRestriction opening prop modifer (str card " " fill))))) 
+     fill (translate filler subject2label "owl:onClass")
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minQualifiedCardinality"} number]] 
+     (renderRestriction opening prop modifer card fill)))) 
 
 (defn translateObjectMinCardinality
   "Translate a ObjectMinCardinality expression"
@@ -217,9 +205,9 @@
   (let [[op cardinality property] ofn ;no parent RDFa property
      opening (spanOpening ofn)
      prop (property/translate property subject2label "owl:onProperty")
-     modifer (str " max " cardinality)
-     card (str "<span property=" \" "owl:maxCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")]
-     ;fill (translate filler subject2label "owl:minCardinality")]
+     modifer (str " max ") 
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:maxCardinality"} number] ] 
      (renderRestriction opening prop modifer card)))
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
@@ -227,8 +215,8 @@
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " max ")
-     card (str "<span property=" \" "owl:maxCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")]
-     ;fill (translate filler subject2label "owl:allValuesFrom")]
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minCardinality"} number] ]
      (renderRestriction opening prop modifer card))))
 
 (defn translateObjectMaxQualifiedCardinality 
@@ -239,17 +227,19 @@
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " max ")
      fill (translate filler subject2label "owl:onClass")
-     card (str "<span property=" \" "owl:maxQualifiedCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")]
-     (renderRestriction opening prop modifer (str card " " fill))))
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minQualifiedCardinality"} number]] 
+     (renderRestriction opening prop modifer card fill)))
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
    (let [[op cardinality property filler] ofn
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " max ")
-     card (str "<span property=" \" "owl:maxQualifiedCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minQualifiedCardinality"} number]
      fill (translate filler subject2label "owl:onClass")]
-     (renderRestriction opening prop modifer (str card " " fill))))) 
+     (renderRestriction opening prop modifer card fill)))) 
 
 (defn translateObjectMaxCardinality
   "Translate a ObjectMaxCardinality expression"
@@ -269,8 +259,8 @@
      opening (spanOpening ofn)
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " exactly " cardinality)
-     card (str "<span property=" \" "owl:cardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")]
-     ;fill (translate filler subject2label "owl:minCardinality")]
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minCardinality"} number] ] 
      (renderRestriction opening prop modifer card)))
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
@@ -278,8 +268,8 @@
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " exactly ")
-     card (str "<span property=" \" "owl:cardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")]
-     ;fill (translate filler subject2label "owl:allValuesFrom")]
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minCardinality"} number] ]
      (renderRestriction opening prop modifer card))))
 
 (defn translateObjectExactQualifiedCardinality 
@@ -290,17 +280,19 @@
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " exactly ")
      fill (translate filler subject2label "owl:onClass")
-     card (str "<span property=" \" "owl:qualifiedCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")]
-     (renderRestriction opening prop modifer (str card " " fill))))
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minQualifiedCardinality"} number]] 
+     (renderRestriction opening prop modifer card fill)))
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
    (let [[op cardinality property filler] ofn
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " exactly ")
-     card (str "<span property=" \" "owl:qualifiedCardinality" \" ">" \" cardinality \" "^^xsd:nonNegativeInteger" "</span>")
-     fill (translate filler subject2label "owl:onClass")]
-     (renderRestriction opening prop modifer (str card " " fill))))) 
+     fill (translate filler subject2label "owl:onClass")
+     number (str cardinality "^^xsd:nonNegativeInteger")
+     card [:span {:property "owl:minQualifiedCardinality"} number]] 
+     (renderRestriction opening prop modifer card fill)))) 
 
 (defn translateObjectExactCardinality
   "Translate a ObjectExactCardinality expression"
@@ -338,7 +330,7 @@
      opening (spanOpening ofn)
      prop (property/translate property subject2label "owl:onProperty")
      modifer " some Self "
-     fill (str "<span property=\"owl:hasSelf\" hidden="true">\"true\"^^xsd:boolean</span>")]
+     fill [:span {:property "owl:hasSelf", :hidden "true"} "true^^xsd:boolean" ]]
      (renderRestriction opening prop modifer fill))) 
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
@@ -346,7 +338,7 @@
      opening (spanOpening ofn propertyRDFa)
      prop (property/translate property subject2label "owl:onProperty")
      modifer " some Self "
-     fill (str "<span property=\"owl:hasSelf\" hidden="true">\"true\"^^xsd:boolean</span>")] 
+     fill [:span {:property "owl:hasSelf", :hidden "true"} "true^^xsd:boolean" ]]
      (renderRestriction opening prop modifer fill))))
 
 (defn translateObjectIntersection
@@ -354,78 +346,56 @@
   ([ofn subject2label]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn) 
-        intersectionClass (str htmlOpening  "(<span property=\"owl:intersectionOf\" typeof=\"rdf:List\"> ")
-        operands (str intersectionClass (translateList arguments subject2label "and"))
-        intersectionClosing  (str operands "</span>)")
-        htmlClosing (str intersectionClosing "</span>")]
-    htmlClosing)) 
+        operands (translateList arguments subject2label "and")] 
+    [:span htmlOpening [:span {:property "owl:intersectionOf", :typeof "rdf:List"} operands]]))
   ([ofn subject2label propertyRDFa]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn propertyRDFa)
-        intersectionClass (str htmlOpening  "(<span property=\"owl:intersectionOf\" typeof=\"rdf:List\"> ")
-        operands (str intersectionClass (translateList arguments subject2label "and"))
-        intersectionClosing  (str operands "</span>)")
-        htmlClosing (str intersectionClosing  "</span>")]
-    htmlClosing))) 
+        operands (translateList arguments subject2label "and")]
+    [:span htmlOpening [:span {:property "owl:intersectionOf", :typeof "rdf:List"} "(" operands ")"]])))
 
 (defn translateObjectUnion
   "Translate an ObjectUnionOf expression"
   ([ofn subject2label]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn) 
-        unionClass (str htmlOpening  "(<span property=\"owl:unionOf\" typeof=\"rdf:List\"> ")
-        operands (str unionClass (translateList arguments subject2label "or"))
-        unionClosing  (str operands "</span>)")
-        htmlClosing (str unionClosing "</span>")]
-    htmlClosing)) 
+        operands (translateList arguments subject2label "or")]
+    [:span htmlOpening [:span {:property "owl:unionOf", :typeof "rdf:List"} "(" operands ")"]]))
+
   ([ofn subject2label propertyRDFa]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn propertyRDFa)
-        unionClass (str htmlOpening  "(<span property=\"owl:unionOf\" typeof=\"rdf:List\"> ")
-        operands (str unionClass (translateList arguments subject2label "or"))
-        unionClosing  (str operands "</span>)")
-        htmlClosing (str unionClosing  "</span>")]
-    htmlClosing))) 
+        operands (translateList arguments subject2label "or")]
+    [:span htmlOpening [:span {:property "owl:unionOf", :typeof "rdf:List"} "(" operands ")"]])))
+
 
 (defn translateObjectOneOf
   "Translate an ObjectOneOf expression"
 ([ofn subject2label] 
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn) 
-        oneOf (str htmlOpening  "{<span property=\"owl:oneOf\" typeof=\"rdf:List\"> ")
-        operands (str oneOf (translateList arguments subject2label ""))
-        unionClosing  (str operands "</span>}")
-        htmlClosing (str unionClosing "</span>")]
-    htmlClosing)) 
+        operands (translateList arguments subject2label "")]
+    [:span htmlOpening [:span {:property "owl:oneOf", :typeof "rdf:List"} "{" operands "}"]]))
+
   ([ofn subject2label propertyRDFa]
   (let [[operator & arguments] ofn 
         htmlOpening (spanOpening ofn propertyRDFa)
-        oneOf (str htmlOpening  "{<span property=\"owl:oneOf\" typeof=\"rdf:List\"> ")
-        operands (str oneOf (translateList arguments subject2label ""))
-        unionClosing  (str operands "</span>}")
-        htmlClosing (str unionClosing  "</span>")]
-    htmlClosing))) 
+        operands (translateList arguments subject2label "")]
+    [:span htmlOpening [:span {:property "owl:oneOf", :typeof "rdf:List"} "{" operands "}"]])))
+
 
 (defn translateObjectComplement
   "Translate an ObjectComplementOf expression"
   ([ofn subject2label]
   (let [[operator argument] ofn
-    htmlOpen "" ;this is a compound expression - so it needs to be put in parenthesis
-    opening (str htmlOpen (spanOpening ofn))
-    inverse (str opening " not (")
-    prop (str inverse " " (translate argument subject2label "owl:complementOf"))
-    closing (str prop " </span>")
-    htmlClosing (str closing ")")]
-   htmlClosing )) 
+    htmlOpen (spanOpening ofn)
+    prop (translate argument subject2label "owl:complementOf")]
+    [:span htmlOpen " not (" prop ")"]))
   ([ofn subject2label propertyRDFa]
   (let [[operator argument] ofn
-    htmlOpen "" ;this is a compound expression - so it needs to be put in parenthesis
-    opening (str htmlOpen (spanOpening ofn propertyRDFa))
-    inverse (str opening " not (")
-    prop (str inverse " " (translate argument subject2label "owl:complementOf"))
-    closing (str prop " </span>")
-    htmlClosing (str closing ")")]
-   htmlClosing ))) 
+    htmlOpen (spanOpening ofn propertyRDFa)
+    prop (translate argument subject2label "owl:complementOf")]
+    [:span htmlOpen " not (" prop ")"]))) 
 
 (defn translate
   "Translate OFN-S expression to manchester synax"
