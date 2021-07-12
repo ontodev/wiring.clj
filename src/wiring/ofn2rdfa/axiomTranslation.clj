@@ -1,9 +1,9 @@
-(ns wiring.ofn2hiccup.axiomTranslation
+(ns wiring.ofn2rdfa.axiomTranslation
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [hiccup.core :as hicc]
             [clojure.spec.alpha :as spec]
-            [wiring.ofn2hiccup.classTranslation :as classTranslation]))
+            [wiring.ofn2rdfa.classTranslation :as classTranslation]))
 
 ;TODO data validation
 (declare translate)

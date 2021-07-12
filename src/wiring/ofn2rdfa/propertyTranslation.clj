@@ -1,4 +1,4 @@
-(ns wiring.ofn2hiccup.propertyTranslation
+(ns wiring.ofn2rdfa.propertyTranslation
   (:require [clojure.repl :as repl]
             [clojure.java.io :as io])
   (:gen-class))

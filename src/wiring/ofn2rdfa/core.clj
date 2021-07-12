@@ -1,4 +1,4 @@
-(ns wiring.ofn2hiccup.core
+(ns wiring.ofn2rdfa.core
   (:require [clojure.repl :as repl]
             [wiring.ofn2rdfa.axiomTranslation :as axiomTranslation]
             [wiring.util.thickTriples :as thickTriples]
