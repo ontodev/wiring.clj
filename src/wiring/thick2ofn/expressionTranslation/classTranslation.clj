@@ -125,7 +125,7 @@
    }
   (let [onProperty (property/translate (:owl:onProperty predicates)) 
         rawProperty (:owl:onProperty predicates)
-        filler (str "\"" (:owl:hasValue predicates) "\"")];individual
+        filler (:owl:hasValue predicates)];individual
     (if (is-typed-as-object-property? rawProperty) 
       (vector "ObjectHasValue" onProperty filler);type inference
       (vector "HasValue" onProperty filler))))
