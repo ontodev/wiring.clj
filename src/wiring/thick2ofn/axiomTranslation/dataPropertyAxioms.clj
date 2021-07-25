@@ -24,24 +24,24 @@
   [predicates]
   (let [lhs (DPT/translate (:subject predicates))
         rhs (DPT/translate (:object predicates))]
-    (vector "DisjointObjectProperties" lhs rhs)))
+    (vector "DisjointDataProperties" lhs rhs)))
 
 (defn translateDomain
   "Translate rdfs:domain"
   [predicates]
   (let [property (DPT/translate (:subject predicates))
         domain (DTT/translate (:object predicates))]
-    (vector "ObjectPropertyDomain" property domain)))
+    (vector "DataPropertyDomain" property domain)))
 
 (defn translateRange
   "Translate rdfs:range"
   [predicates]
   (let [property (DPT/translate (:subject predicates))
         rangeClass (DTT/translate (:object predicates))]
-    (vector "ObjectPropertyRange" property rangeClass)))
+    (vector "DataPropertyRange" property rangeClass)))
 
 (defn translateFunctionalProperty
   "Translate owl:FunctionalProperty"
   [predicates]
   (let [property (DPT/translate (:subject predicates))]
-    (vector "FunctionalObjectProperty" property)))
+    (vector "FunctionalDataProperty" property)))
