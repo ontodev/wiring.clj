@@ -21,7 +21,7 @@
 ;then, we can infer the type of the expression itself.  
 
 (defn is-class-expression?  
-  "Checks whether an expression is an OWL class expression."
+  "Checks whether an expression is a non-atomic OWL class expression."
   [expression]
     (case (first expression)
       "ObjectSomeValuesFrom" true
@@ -201,7 +201,8 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/classIntersection predicates)]}
   (let [arguments (translate (:owl:intersectionOf predicates))]
-    (if (some is-class-expression? arguments)
+    (if (or (some is-class-expression? arguments)
+            (is-typed-as-class? predicates))
       (vec (cons "ObjectIntersectionOf" arguments))
       (vec (cons "IntersectionOf" arguments)))))
 
@@ -210,7 +211,8 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/classUnion predicates)]}
   (let [arguments (translate (:owl:unionOf predicates))]
-    (if (some is-class-expression? arguments)
+    (if (or (some is-class-expression? arguments)
+            (is-typed-as-class? predicates))
       (vec (cons "ObjectUnionOf" arguments))
       (vec (cons "UnionOf" arguments)))))
 
@@ -226,7 +228,8 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/classComplement predicates)]}
   (let [argument (translate (:owl:complementOf predicates))]
-    (if (is-class-expression? argument)
+    (if (or (is-class-expression? argument)
+            (is-typed-as-class? predicates))
     (vector "ObjectComplementOf" argument)
     (vector "ComplementOf" argument))))
 
@@ -290,12 +293,13 @@
     (case entrypoint
       "owl:Restriction" (translateRestriction predicates)
       "owl:Class" (translateClass predicates)
-      "rdfs:Datatype" (datatype/translate predicates))))
+      "")))
+      ;"rdfs:Datatype" (datatype/translate predicates))));TODO: why is this case here?
 
 (defn translate
   "Translate predicate map to OFS."
   [predicateMap]
   (cond
-    (string? predicateMap) predicateMap ;base case
+    (string? predicateMap) predicateMap;base case
     (util/typed? predicateMap) (translateTyped predicateMap);type information is available
     :else (translateUntyped predicateMap)));type information is not available
