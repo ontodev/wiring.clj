@@ -49,7 +49,7 @@
   (loop [in predicates
          out []]
     (if (= in "rdf:nil")
-      out ;(apply util/ofsFormatNoBrackets out)
+      out 
       (recur (:rdf:rest in)
              (conj out (translate (:rdf:first in)))))));recursively translate class expressions
 
@@ -76,9 +76,6 @@
       (vector "ObjectSomeValuesFrom" onProperty filler)
       (vector "SomeValuesFrom" onProperty filler))))
 
-      ;(util/ofsFormat "ObjectSomeValuesFrom" onProperty filler)
-      ;(util/ofsFormat "SomeValuesFrom" onProperty filler))));!!! this is an OFN-S abstraction
-
 (defn translateUniversalRestriction
   "Translate a universal restriction."
   [predicates]
@@ -104,8 +101,8 @@
         rawProperty (:owl:onProperty predicates)
         filler (str "\"" (:owl:hasValue predicates) "\"")];individual
     (if (isPropertyExpression? rawProperty)
-      (util/ofsFormat "ObjectHasValue" onProperty filler);type inference
-      (util/ofsFormat "HasValue" onProperty filler))))
+      (vector "ObjectHasValue" onProperty filler);type inference
+      (vector "HasValue" onProperty filler))))
 
 (defn translateHasSelfRestriction
   "Translate hasSelf restriction."
@@ -126,8 +123,8 @@
         rawProperty (:owl:onProperty predicates)
         cardinality (util/getNumber (:owl:minCardinality predicates))]; 
     (if (isPropertyExpression? rawProperty)
-      (util/ofsFormat "ObjectMinCardinality" cardinality onProperty)
-      (util/ofsFormat "MinCardinality" cardinality onProperty))))
+      (vector "ObjectMinCardinality" cardinality onProperty)
+      (vector "MinCardinality" cardinality onProperty))))
 
 (defn translateMinQualifiedCardinalityRestriction
   "Translate minimum qualified cardinality restriction."
@@ -208,7 +205,6 @@
    ;:post [(spec/valid? string? %)]
    }
   (let [arguments (translate (:owl:unionOf predicates))]
-    ;(util/ofsFormat "ObjectUnionOf" arguments)))
     (vec (cons "ObjectUnionOf" arguments))))
 
 (defn translateOneOf

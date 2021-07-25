@@ -4,7 +4,6 @@
             [clojure.spec.alpha :as spec]
             [wiring.thick2ofn.propertyTranslation :as propertyTranslation]
             [wiring.thick2ofn.expressionTranslation.classTranslation :as classTranslation]
-            [wiring.thick2ofn.util :as util]
             [wiring.thick2ofn.spec :as owlspec]))
 
 ;TODO data validation
@@ -22,7 +21,6 @@
    }
   (let [subclass (classTranslation/translate (:subject predicates))
         superclass (classTranslation/translate (:object predicates))]
-    ;(util/ofsFormat "SubClassOf" subclass superclass)
     (vector "SubClassOf" subclass superclass)))
 
 (defn translateDisjointUnionOf

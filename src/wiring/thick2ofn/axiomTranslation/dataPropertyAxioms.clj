@@ -17,31 +17,31 @@
   [predicates]
   (let [subProperty (DPT/translate (:subject predicates)) 
         superProperty (DPT/translate (:object predicates))]
-    (util/ofsFormat "SubDataPropertyOf" subProperty superProperty)))
+    (vector "SubDataPropertyOf" subProperty superProperty)))
 
 (defn translateDisjointProperties
   "Translate propertyDisjointWith"
   [predicates]
   (let [lhs (DPT/translate (:subject predicates))
         rhs (DPT/translate (:object predicates))]
-    (util/ofsFormat "DisjointObjectProperties" lhs rhs)))
+    (vector "DisjointObjectProperties" lhs rhs)))
 
 (defn translateDomain
   "Translate rdfs:domain"
   [predicates]
   (let [property (DPT/translate (:subject predicates))
         domain (DTT/translate (:object predicates))]
-    (util/ofsFormat "ObjectPropertyDomain" property domain)))
+    (vector "ObjectPropertyDomain" property domain)))
 
 (defn translateRange
   "Translate rdfs:range"
   [predicates]
   (let [property (DPT/translate (:subject predicates))
         rangeClass (DTT/translate (:object predicates))]
-    (util/ofsFormat "ObjectPropertyRange" property rangeClass)))
+    (vector "ObjectPropertyRange" property rangeClass)))
 
 (defn translateFunctionalProperty
   "Translate owl:FunctionalProperty"
   [predicates]
   (let [property (DPT/translate (:subject predicates))]
-    (util/ofsFormat "FunctionalObjectProperty" property)))
+    (vector "FunctionalObjectProperty" property)))
