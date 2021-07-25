@@ -2,8 +2,9 @@
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
-            [wiring.thick2ofn.propertyTranslation :as propertyTranslation] ;TODO change this
-            [wiring.thick2ofn.classTranslation :as classTranslation];TODO
+            [wiring.thick2ofn.expressionTranslation.propertyTranslation :as propertyTranslation]
+            [wiring.thick2ofn.expressionTranslation.classTranslation :as CET]
+            [wiring.thick2ofn.expressionTranslation.dataTypeTranslation :as DTT]
             [wiring.thick2ofn.axiomTranslation.objectPropertyAxioms :as OPA]
             [wiring.thick2ofn.axiomTranslation.classExpressionAxioms :as CEA]
             [wiring.thick2ofn.util :as util]
@@ -11,6 +12,13 @@
 
 ;TODO data validation
 (declare translate)
+
+(defn is-object-property-expression?
+  "Checks whether an expression is a non-atomic OWL object property expression."
+  [expression]
+  (case (first expression)
+      "ObjectInverseOf" true
+      false))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;               Ambiguous Property Axioms
@@ -21,39 +29,50 @@
   "Translate owl:FunctionalProperty"
   [predicates]
   (let [property (propertyTranslation/translate (:subject predicates))]
-    (util/ofsFormat "FunctionalProperty" property)))
+    (if (is-object-property-expression? property)
+      (vector "FunctionalObjectProperty" property)
+      (vector "FunctionalProperty" property))))
 
 (defn translateSubPropertyOf
   "Translate subPropertyOf"
   [predicates]
   (let [subProperty (propertyTranslation/translate (:subject predicates))
         superProperty (propertyTranslation/translate (:object predicates))]
-    (util/ofsFormat "SubPropertyOf" subProperty superProperty)))
+    (if (or (is-object-property-expression? subProperty)
+            (is-object-property-expression? superProperty))
+      (vector "ObjectSubPropertyOf" subProperty superProperty) 
+      (vector "SubPropertyOf" subProperty superProperty))))
 
 (defn translateDisjointProperties
   "Translate propertyDisjointWith"
   [predicates]
   (let [subProperty (propertyTranslation/translate (:subject predicates))
         superProperty (propertyTranslation/translate (:object predicates))]
-    (util/ofsFormat "DisjointProperties" subProperty superProperty)))
+    (if (or (is-object-property-expression? subProperty)
+            (is-object-property-expression? superProperty))
+      (vector "ObjectDisjointProperties" subProperty superProperty)
+      (vector "DisjointProperties" subProperty superProperty))))
 
 (defn translateDomain
   "Translate rdfs:domain"
   [predicates]
+  ;NB the domain is a class expression for both data and object properties  
   (let [property (propertyTranslation/translate (:subject predicates))
-        domain (classTranslation/translate (:object predicates))];cannot translate this then,..
-    (util/ofsFormat "PropertyDomain" property domain)))
-;TODO: in case of ambiguity: try both translations - if one is sucessful winner -
-;if both are successsful, and it's not a named entity, then it's ambiguous all the way trhough
-
+        domain (CET/translate (:object predicates))]
+    (if (is-object-property-expression? property)
+      (vector "PropertyDomain" property domain)
+      (vector "ObjectPropertyDomain" property domain)))) 
 
 (defn translateRange
   "Translate rdfs:domain"
   [predicates]
   (let [property (propertyTranslation/translate (:subject predicates))
-        rang (classTranslation/translate (:object predicates))];cannot translate this then,..
-    (util/ofsFormat "PropertyDomain" property rang))) 
-
+        classRange (CET/translate (:object predicates))
+        dataRange (DTT/translate (:object predicates))]
+    (cond
+     (CET/is-class-expression? classRange) (vector "ObjectPropertyDomain" property dataRange)
+     (DTT/is-data-range-expression? dataRange) (vector "DataPropertyDomain" property dataRange)
+     :else (vector "PropertyDomain"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                    Translation
@@ -103,6 +122,9 @@
       "owl:TransitiveProperty" (OPA/translateTransitiveProperty predicateMap)
 
       ;ambiguous property axioms
+      ;are translated as "object properties"
+      ;because there is only one object property constructor that could infer the correct type
+
       ;that can be either object or data property axioms
       ;"rdfs:subPropertyOf" (translateSubPropertyOf predicateMap)
       ;"owl:propertyDisjointWith" (translateDisjointProperties predicateMap)
