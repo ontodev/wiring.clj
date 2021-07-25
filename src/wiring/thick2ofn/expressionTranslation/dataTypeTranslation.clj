@@ -201,7 +201,8 @@
   (let [entrypoint (:rdf:type predicates)]
     (case entrypoint
       "owl:Restriction" (translateRestriction predicates)
-      "rdfs:Datatype" (translateDatatype predicates))));
+      "rdfs:Datatype" (translateDatatype predicates)
+      "")));
 
 (defn translate
   "Translate predicate map to OFS."
