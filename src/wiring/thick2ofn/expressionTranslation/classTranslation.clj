@@ -67,9 +67,7 @@
 (defn translateList
   "Translate an RDF list."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/list predicates)]
-  ; :post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/list predicates)]}
   (loop [in predicates
          out []]
     (if (= in "rdf:nil")
@@ -88,9 +86,7 @@
 (defn translateExistentialRestriction
   "Translate an existential restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/existential predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/existential predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
         filler (translate (:owl:someValuesFrom predicates))
         rawProperty (:owl:onProperty predicates)
@@ -104,9 +100,7 @@
 (defn translateUniversalRestriction
   "Translate a universal restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/universal predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/universal predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
         filler (translate (:owl:allValuesFrom predicates))
         rawProperty (:owl:onProperty predicates)
@@ -120,9 +114,7 @@
 (defn translateHasValueRestriction
   "Translate hasValue restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/hasValue predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/hasValue predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates)) 
         rawProperty (:owl:onProperty predicates)
         filler (:owl:hasValue predicates)];individual
@@ -133,9 +125,7 @@
 (defn translateHasSelfRestriction
   "Translate hasSelf restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/hasSelf predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/hasSelf predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))]
     (vector "ObjectHasSelf" onProperty)));this has no datatype variant
 
@@ -145,9 +135,7 @@
 (defn translateMinCardinalityRestriction
   "Translate minimum cardinality restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/minCardinality predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/minCardinality predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates)) 
         rawProperty (:owl:onProperty predicates)
         cardinality (util/getNumber (:owl:minCardinality predicates))]
@@ -158,9 +146,7 @@
 (defn translateMinQualifiedCardinalityRestriction
   "Translate minimum qualified cardinality restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/minQualifiedCardinality predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/minQualifiedCardinality predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
         cardinality (util/getNumber (:owl:minQualifiedCardinality predicates))
         filler (translate (:owl:onClass predicates))];
@@ -169,9 +155,7 @@
 (defn translateMaxCardinalityRestriction
   "Translate maximum cardinality restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/maxCardinality predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/maxCardinality predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates)) 
         rawProperty (:owl:onProperty predicates)
         cardinality (util/getNumber (:owl:maxCardinality predicates))];
@@ -182,9 +166,7 @@
 (defn translateMaxQualifiedCardinalityRestriction
   "Translate maximum qualified cardinality restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/maxQualifiedCardinality predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/maxQualifiedCardinality predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
         cardinality (util/getNumber (:owl:maxQualifiedCardinality predicates))
         filler (translate (:owl:onClass predicates))];
@@ -193,9 +175,7 @@
 (defn translateExactCardinalityRestriction
   "Translate exact cardinality restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/exactCardinality predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/exactCardinality predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
         rawProperty (:owl:onProperty predicates) 
         cardinality (util/getNumber (:owl:cardinality predicates))];
@@ -206,9 +186,7 @@
 (defn translateExactQualifiedCardinalityRestriction
   "Translate exact qualified cardinality restriction."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/exactQualifiedCardinality predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/exactQualifiedCardinality predicates)]}
   (let [onProperty (property/translate (:owl:onProperty predicates))
         cardinality (util/getNumber (:owl:qualifiedCardinality predicates))
         filler (translate (:owl:onClass predicates))];
@@ -221,9 +199,7 @@
 (defn translateIntersection
   "Translate an intersection."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/classIntersection predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/classIntersection predicates)]}
   (let [arguments (translate (:owl:intersectionOf predicates))]
     (if (some is-class-expression? arguments)
       (vec (cons "ObjectIntersectionOf" arguments))
@@ -232,9 +208,7 @@
 (defn translateUnion
   "Translate a union."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/classUnion predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/classUnion predicates)]}
   (let [arguments (translate (:owl:unionOf predicates))]
     (if (some is-class-expression? arguments)
       (vec (cons "ObjectUnionOf" arguments))
@@ -243,18 +217,14 @@
 (defn translateOneOf
   "Translate a oneOf."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/oneOf predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/oneOf predicates)]}
   (let [arguments (translateList (:owl:oneOf predicates))]
     (vec (cons "OneOf" arguments))));TODO need to identify types of individuals (ObjectOneOf) & literlas (DataOneOf)
 
 (defn translateComplement
   "Translate complement."
   [predicates]
-  {:pre [(spec/valid? ::owlspec/classComplement predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/classComplement predicates)]}
   (let [argument (translate (:owl:complementOf predicates))]
     (if (is-class-expression? argument)
     (vector "ObjectComplementOf" argument)
