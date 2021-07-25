@@ -1,4 +1,4 @@
-(ns wiring.thick2ofn.dataTypeTranslation
+(ns wiring.thick2ofn.expressionTranslation.dataTypeTranslation
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
@@ -7,7 +7,18 @@
 
 (declare translate) ;recursive translation (not tail recursive)  
 
-(defn isDataTypeExpression?
+(defn is-data-range-expression?  
+  "Checks whether an expression is a non-atomic OWL datatype expression."
+  [expression]
+    (case (first expression)
+      "DataIntersectionOf" true
+      "DataUnionOf" true
+      "DataComplementOf" true
+      "DatatypeRestriction" true
+      "DataOneOf" true
+      false))
+
+(defn is-typed-as-datatype?
   "Checks whether input 'expression' is a datatype expression."
   [expression]
   (and (map? expression)
