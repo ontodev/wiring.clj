@@ -20,8 +20,32 @@
 ;is an ObjectProperty (DataProperty) or a Class (Datatype),
 ;then, we can infer the type of the expression itself.  
 
-(defn isClassExpression?
-  "Checks whether input 'expression' is an OWL class expression."
+(defn is-class-expression?  
+  "Checks whether an expression is an OWL class expression."
+  [expression]
+    (case (first expression)
+      "ObjectSomeValuesFrom" true
+      "ObjectAllValuesFrom" true
+      "ObjectHasValue" true
+      "ObjectMinCardinality" true
+      "ObjectMaxCardinality" true
+      "ObjectExactCardinality" true
+      "ObjectIntersectionOf" true
+      "ObjectUnionOf" true
+      "ObjectOneOf" true
+      "ObjectComplementOf" true
+      "ObjectHasSelf" true
+      ;ambiguous
+      "SomeValuesFrom" true
+      "AllValuesFrom" true
+      "HasValue" true
+      "MaxCardinality" true
+      "MinCardinality" true
+      "ExactCardinality" true
+      false))
+
+(defn is-typed-as-class?
+  "Checks whether a predicate map is typed as an OWL class expression."
   [expression]
   (if (and (map? expression)
            (contains? expression :rdf:type))
@@ -29,8 +53,8 @@
         (= "owl:Restriction" (:rdf:type expression)));Restrictions are class expressions
     false));could still be a named class expression - but we can't find that out without type information
 
-(defn isPropertyExpression?
-  "Checks whether input 'expression' is an OWL class expression."
+(defn is-typed-as-object-property?
+  "Checks whether a predicate map is typed as an OWL object property expression."
   [expression]
   (and (map? expression)
        (contains? expression :owl:inverseOf)))
@@ -71,8 +95,9 @@
         filler (translate (:owl:someValuesFrom predicates))
         rawProperty (:owl:onProperty predicates)
         rawFiller (:owl:someValuesFrom predicates)]
-    (if (or (isClassExpression? rawFiller) 
-            (isPropertyExpression? rawProperty))
+    (if (or (is-typed-as-class? rawFiller) 
+            (is-typed-as-object-property? rawProperty)
+            (is-class-expression? filler))
       (vector "ObjectSomeValuesFrom" onProperty filler)
       (vector "SomeValuesFrom" onProperty filler))))
 
@@ -86,8 +111,9 @@
         filler (translate (:owl:allValuesFrom predicates))
         rawProperty (:owl:onProperty predicates)
         rawFiller (:owl:someValuesFrom predicates)]
-    (if (or (isClassExpression? rawFiller)
-            (isPropertyExpression? rawProperty))
+    (if (or (is-typed-as-class? rawFiller)
+            (is-typed-as-object-property? rawProperty)
+            (is-class-expression? filler))
       (vector "ObjectAllValuesFrom" onProperty filler)
       (vector "AllValuesFrom" onProperty filler))))
 
@@ -100,7 +126,7 @@
   (let [onProperty (property/translate (:owl:onProperty predicates)) 
         rawProperty (:owl:onProperty predicates)
         filler (str "\"" (:owl:hasValue predicates) "\"")];individual
-    (if (isPropertyExpression? rawProperty)
+    (if (is-typed-as-object-property? rawProperty) 
       (vector "ObjectHasValue" onProperty filler);type inference
       (vector "HasValue" onProperty filler))))
 
@@ -113,6 +139,9 @@
   (let [onProperty (property/translate (:owl:onProperty predicates))]
     (vector "ObjectHasSelf" onProperty)));this has no datatype variant
 
+
+;NB: qualified cardinality restrictions are necessarily typed correctly
+;due to "owl:onRange" and "owl:onClass" 
 (defn translateMinCardinalityRestriction
   "Translate minimum cardinality restriction."
   [predicates]
@@ -121,8 +150,8 @@
    }
   (let [onProperty (property/translate (:owl:onProperty predicates)) 
         rawProperty (:owl:onProperty predicates)
-        cardinality (util/getNumber (:owl:minCardinality predicates))]; 
-    (if (isPropertyExpression? rawProperty)
+        cardinality (util/getNumber (:owl:minCardinality predicates))]
+    (if (is-typed-as-object-property? rawProperty)
       (vector "ObjectMinCardinality" cardinality onProperty)
       (vector "MinCardinality" cardinality onProperty))))
 
@@ -146,7 +175,7 @@
   (let [onProperty (property/translate (:owl:onProperty predicates)) 
         rawProperty (:owl:onProperty predicates)
         cardinality (util/getNumber (:owl:maxCardinality predicates))];
-    (if (isPropertyExpression? rawProperty)
+    (if (is-typed-as-object-property? rawProperty)
       (vector "ObjectMaxCardinality" cardinality onProperty)
       (vector "MaxCardinality" cardinality onProperty))))
 
@@ -170,7 +199,7 @@
   (let [onProperty (property/translate (:owl:onProperty predicates))
         rawProperty (:owl:onProperty predicates) 
         cardinality (util/getNumber (:owl:cardinality predicates))];
-    (if (isPropertyExpression? rawProperty)
+    (if (is-typed-as-object-property? rawProperty)
       (vector "ObjectExactCardinality" cardinality onProperty)
       (vector "ExactCardinality" cardinality onProperty))))
 
@@ -196,7 +225,9 @@
    ;:post [(spec/valid? string? %)]
    }
   (let [arguments (translate (:owl:intersectionOf predicates))]
-    (vec (cons "ObjectIntersectionOf" arguments))))
+    (if (some is-class-expression? arguments)
+      (vec (cons "ObjectIntersectionOf" arguments))
+      (vec (cons "IntersectionOf" arguments)))))
 
 (defn translateUnion
   "Translate a union."
@@ -205,7 +236,9 @@
    ;:post [(spec/valid? string? %)]
    }
   (let [arguments (translate (:owl:unionOf predicates))]
-    (vec (cons "ObjectUnionOf" arguments))))
+    (if (some is-class-expression? arguments)
+      (vec (cons "ObjectUnionOf" arguments))
+      (vec (cons "UnionOf" arguments)))))
 
 (defn translateOneOf
   "Translate a oneOf."
@@ -213,8 +246,8 @@
   {:pre [(spec/valid? ::owlspec/oneOf predicates)]
    ;:post [(spec/valid? string? %)]
    }
-  (let [arguments (translateList (:owl:oneOf predicates))];TODO: no translation for individuals yet
-    (vec (cons "ObjectOneOf" arguments))))
+  (let [arguments (translateList (:owl:oneOf predicates))]
+    (vec (cons "OneOf" arguments))));TODO need to identify types of individuals (ObjectOneOf) & literlas (DataOneOf)
 
 (defn translateComplement
   "Translate complement."
@@ -223,7 +256,9 @@
    ;:post [(spec/valid? string? %)]
    }
   (let [argument (translate (:owl:complementOf predicates))]
-    (vector "ObjectComplementOf" argument)))
+    (if (is-class-expression? argument)
+    (vector "ObjectComplementOf" argument)
+    (vector "ComplementOf" argument))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
