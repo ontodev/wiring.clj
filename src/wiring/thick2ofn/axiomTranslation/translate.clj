@@ -71,6 +71,14 @@
      (typeInference/is-ambiguous-expression? dataRange) (vector "PropertyDomain" property dataRange)
      :else (vector "PropertyDomain" property (:object predicates)))))
 
+(defn translateAllDisjointProperties 
+  "Translate owl:AllDisjointProperties"
+  [predicates]
+  (let [arguments (propertyTranslation/translateList (:owl:members (:object predicates)))]
+    (if (some typeInference/is-object-property-expression? arguments)
+      (vec (cons "DisjointObjectProperties" arguments))
+      (vec (cons "DisjointProperties" arguments)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                    Translation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -83,6 +91,7 @@
     (case object
       ;ambiguous property axiom
       "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
+      "owl:AllDisjointProperties" (translateAllDisjointProperties predicateMap)
 
       ;object property axiom
       "owl:InverseFunctionalProperty" (OPA/translate predicateMap)
