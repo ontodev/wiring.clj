@@ -4,7 +4,7 @@
             [clojure.spec.alpha :as spec]
             [wiring.thick2ofn.util :as util]
             [wiring.thick2ofn.expressionTranslation.propertyTranslation :as property]
-            [wiring.thick2ofn.dataTypeTranslation :as datatype]
+            [wiring.thick2ofn.expressionTranslation.dataTypeTranslation :as DTT]
             [wiring.thick2ofn.spec :as owlspec]))
 
 (declare translate) ;recursive translation (not tail recursive)  
@@ -91,11 +91,12 @@
         filler (translate (:owl:someValuesFrom predicates))
         rawProperty (:owl:onProperty predicates)
         rawFiller (:owl:someValuesFrom predicates)]
-    (if (or (is-typed-as-class? rawFiller) 
+    (cond (or (is-typed-as-class? rawFiller) 
             (is-typed-as-object-property? rawProperty)
-            (is-class-expression? filler))
-      (vector "ObjectSomeValuesFrom" onProperty filler)
-      (vector "SomeValuesFrom" onProperty filler))))
+            (is-class-expression? filler)) (vector "ObjectSomeValuesFrom" onProperty filler)
+          (or (DTT/is-typed-as-datatype? rawFiller)
+              (DTT/is-data-range-expression? filler)) (vector "DataSomeValuesFrom" onProperty filler)
+          :else (vector "SomeValuesFrom" onProperty filler))))
 
 (defn translateUniversalRestriction
   "Translate a universal restriction."
@@ -105,11 +106,12 @@
         filler (translate (:owl:allValuesFrom predicates))
         rawProperty (:owl:onProperty predicates)
         rawFiller (:owl:someValuesFrom predicates)]
-    (if (or (is-typed-as-class? rawFiller)
+    (cond (or (is-typed-as-class? rawFiller)
             (is-typed-as-object-property? rawProperty)
-            (is-class-expression? filler))
-      (vector "ObjectAllValuesFrom" onProperty filler)
-      (vector "AllValuesFrom" onProperty filler))))
+            (is-class-expression? filler)) (vector "ObjectAllValuesFrom" onProperty filler)
+          (or (DTT/is-typed-as-datatype? rawFiller)
+              (DTT/is-data-range-expression? filler)) (vector "DataSomeValuesFrom" onProperty filler)
+          :else (vector "AllValuesFrom" onProperty filler))))
 
 (defn translateHasValueRestriction
   "Translate hasValue restriction."
@@ -201,20 +203,22 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/classIntersection predicates)]}
   (let [arguments (translate (:owl:intersectionOf predicates))]
-    (if (or (some is-class-expression? arguments)
-            (is-typed-as-class? predicates))
-      (vec (cons "ObjectIntersectionOf" arguments))
-      (vec (cons "IntersectionOf" arguments)))))
+    (cond (or (some is-class-expression? arguments)
+            (is-typed-as-class? predicates)) (vec (cons "ObjectIntersectionOf" arguments))
+          (or (some DTT/is-data-range-expression? arguments)
+              (DTT/is-typed-as-datatype? predicates)) (vec (cons "DataIntersectionOf" arguments))
+          :else (vec (cons "IntersectionOf" arguments)))))
 
 (defn translateUnion
   "Translate a union."
   [predicates]
   {:pre [(spec/valid? ::owlspec/classUnion predicates)]}
   (let [arguments (translate (:owl:unionOf predicates))]
-    (if (or (some is-class-expression? arguments)
-            (is-typed-as-class? predicates))
-      (vec (cons "ObjectUnionOf" arguments))
-      (vec (cons "UnionOf" arguments)))))
+    (cond (or (some is-class-expression? arguments)
+            (is-typed-as-class? predicates)) (vec (cons "ObjectUnionOf" arguments))
+          (or (some DTT/is-data-range-expression? arguments)
+              (DTT/is-typed-as-datatype? predicates)) (vec (cons "DataUnionOf" arguments))
+          :else (vec (cons "UnionOf" arguments)))))
 
 (defn translateOneOf
   "Translate a oneOf."
@@ -228,11 +232,11 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/classComplement predicates)]}
   (let [argument (translate (:owl:complementOf predicates))]
-    (if (or (is-class-expression? argument)
-            (is-typed-as-class? predicates))
-    (vector "ObjectComplementOf" argument)
-    (vector "ComplementOf" argument))))
-
+    (cond (or (is-class-expression? argument)
+            (is-typed-as-class? predicates)) (vector "ObjectComplementOf" argument)
+          (or (DTT/is-data-range-expression? argument)
+            (DTT/is-typed-as-datatype? predicates)) (vector "DataComplementOf" argument)
+          :else (vector "ComplementOf" argument))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;             Translation by Case
@@ -249,17 +253,17 @@
     (and (contains? predicates :owl:minQualifiedCardinality)
          (contains? predicates :owl:onClass)) (translateMinQualifiedCardinalityRestriction predicates) 
     (and (contains? predicates :owl:minQualifiedCardinality)
-          (contains? predicates :owl:onDataRange)) (datatype/translateDatatypeMinQualifiedCardinality predicates)
+          (contains? predicates :owl:onDataRange)) (DTT/translateDatatypeMinQualifiedCardinality predicates)
     (contains? predicates :owl:maxCardinality) (translateMaxCardinalityRestriction predicates)
     (and (contains? predicates :owl:maxQualifiedCardinality)
           (contains? predicates :owl:onClass)) (translateMaxQualifiedCardinalityRestriction predicates)
     (and (contains? predicates :owl:maxQualifiedCardinality)
-          (contains? predicates :owl:onDataRange)) (datatype/translateDatatypeMaxQualifiedCardinality predicates)
+          (contains? predicates :owl:onDataRange)) (DTT/translateDatatypeMaxQualifiedCardinality predicates)
     (contains? predicates :owl:cardinality) (translateExactCardinalityRestriction predicates)
     (and (contains? predicates :owl:qualifiedCardinality)
          (contains? predicates :owl:onClass)) (translateExactQualifiedCardinalityRestriction predicates)
     (and (contains? predicates :owl:qualifiedCardinality)
-         (contains? predicates :owl:onDataRange)) (datatype/translateDatatypeExactQualifiedCardinality predicates)))
+         (contains? predicates :owl:onDataRange)) (DTT/translateDatatypeExactQualifiedCardinality predicates)))
 
 (defn translateClass [predicates]
   "Translate OWL class expressions with an rdf:type."
@@ -293,8 +297,8 @@
     (case entrypoint
       "owl:Restriction" (translateRestriction predicates)
       "owl:Class" (translateClass predicates)
+      "rdfs:Datatype" (DTT/translate predicates)
       "")))
-      ;"rdfs:Datatype" (datatype/translate predicates))));TODO: why is this case here?
 
 (defn translate
   "Translate predicate map to OFS."
