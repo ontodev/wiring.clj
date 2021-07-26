@@ -107,8 +107,13 @@
   "Translate owl:FunctionalProperty"
   [predicates]
   (let [property (propertyTranslation/translate (:subject predicates))]
-    (vector "FunctionalObjectProperty" property)))
+    (vector "FunctionalObjectProperty" property))) 
 
+(defn translateAllDisjointProperties 
+  "Translate owl:AllDisjointProperties"
+  [predicates]
+  (let [arguments (DPT/translateList (:owl:members (:object predicates)))]
+    (vec (cons "DisjointObjectProperties" arguments))))
 
 (defn translateType
   "Translate rdf:type for axioms"
@@ -121,7 +126,8 @@
       "owl:AsymmetricProperty" (translateAsymmetricProperty predicateMap) 
       "owl:SymmetricProperty" (translateSymmetricProperty predicateMap) 
       "owl:TransitiveProperty" (translateTransitiveProperty predicateMap)
-      "owl:FunctionalProperty" (translateFunctionalProperty predicateMap))))
+      "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
+      "owl:AllDisjointProperties" (translateAllDisjointProperties predicateMap))))
 
 (defn translate
   "Translate predicate map to OFS."
@@ -135,6 +141,3 @@
       "rdfs:range" (translateRange predicateMap)
       "owl:inverseOf" (translateInverseOf predicateMap)
       "rdf:type" (translateType predicateMap))))
-
-
-
