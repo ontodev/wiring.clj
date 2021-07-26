@@ -4,6 +4,7 @@
             [clojure.spec.alpha :as spec]
             [wiring.thick2ofn.expressionTranslation.propertyTranslation :as propertyTranslation]
             [wiring.thick2ofn.expressionTranslation.classTranslation :as classTranslation]
+            [wiring.thick2ofn.typeInference :as typeInference]
             [wiring.thick2ofn.spec :as owlspec]))
 
 ;TODO data validation 
@@ -112,8 +113,10 @@
 (defn translateAllDisjointProperties 
   "Translate owl:AllDisjointProperties"
   [predicates]
-  (let [arguments (DPT/translateList (:owl:members (:object predicates)))]
-    (vec (cons "DisjointObjectProperties" arguments))))
+  (let [arguments (propertyTranslation/translateList (:owl:members (:object predicates)))]
+    (if (some typeInference/is-object-property-expression? arguments)
+      (vec (cons "DisjointObjectProperties" arguments))
+      (vec (cons "DisjointProperties" arguments)))))
 
 (defn translateType
   "Translate rdf:type for axioms"
