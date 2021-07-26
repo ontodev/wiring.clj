@@ -2,13 +2,12 @@
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
-            [wiring.thick2ofn.propertyTranslation :as propertyTranslation]
-            [wiring.thick2ofn.classTranslation :as classTranslation]
+            [wiring.thick2ofn.expressionTranslation.propertyTranslation :as propertyTranslation]
+            [wiring.thick2ofn.expressionTranslation.classTranslation :as classTranslation]
             [wiring.thick2ofn.spec :as owlspec]))
 
-;TODO data validation
-
-;TODO equivalent data properties
+;TODO data validation 
+;TODO equivalent object properties
 
 (declare translate)
 
@@ -104,12 +103,30 @@
   (let [property (propertyTranslation/translate (:subject predicates))]
     (vector "TransitiveObjectProperty" property)))
 
+(defn translateFunctionalProperty
+  "Translate owl:FunctionalProperty"
+  [predicates]
+  (let [property (propertyTranslation/translate (:subject predicates))]
+    (vector "FunctionalObjectProperty" property)))
+
+
+(defn translateType
+  "Translate rdf:type for axioms"
+  [predicateMap]
+  (let [object (:object predicateMap)]
+    (case object
+      "owl:InverseFunctionalProperty" (translateInverseFunctionalProperty predicateMap) 
+      "owl:ReflexiveProperty" (translateReflexiveProperty predicateMap) 
+      "owl:IrreflexiveProperty" (translateIrreflexiveProperty predicateMap) 
+      "owl:AsymmetricProperty" (translateAsymmetricProperty predicateMap) 
+      "owl:SymmetricProperty" (translateSymmetricProperty predicateMap) 
+      "owl:TransitiveProperty" (translateTransitiveProperty predicateMap)
+      "owl:FunctionalProperty" (translateFunctionalProperty predicateMap))))
+
 (defn translate
   "Translate predicate map to OFS."
   [predicateMap]
   (let [p (:predicate predicateMap)];
-    ;(println predicateMap)
-    ;(println p) 
     (case p
       "rdfs:subPropertyOf" (translateSubObjectPropertyOf predicateMap)
       "owl:propertyChainAxiom" (translateSubObjectPropertyOf predicateMap)
@@ -117,13 +134,7 @@
       "rdfs:domain" (translateDomain predicateMap)
       "rdfs:range" (translateRange predicateMap)
       "owl:inverseOf" (translateInverseOf predicateMap)
-      "owl:InverseFunctionalProperty" (translateInverseFunctionalProperty predicateMap)
-      "owl:ReflexiveProperty" (translateReflexiveProperty predicateMap) 
-      "owl:IrreflexiveProperty" (translateIrreflexiveProperty predicateMap) 
-      "owl:AsymmetricProperty" (translateAsymmetricProperty predicateMap) 
-      "owl:SymmetricProperty" (translateSymmetricProperty predicateMap) 
-      "owl:TransitiveProperty" (translateTransitiveProperty predicateMap)
+      "rdf:type" (translateType predicateMap))))
 
-      )))
 
 
