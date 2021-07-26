@@ -39,7 +39,7 @@
   (loop [in predicates
          out []]
     (if (= in "rdf:nil")
-      (apply util/ofsFormatNoBrackets out)
+      out ;(apply util/ofsFormatNoBrackets out)
       (recur (:rdf:rest in)
              (conj out (translate (:rdf:first in)))))));recursively translate data types
 
@@ -49,7 +49,7 @@
   ;a facet is a map of the form {:facet :constraint} 
   (let [facet (name (first (keys predicates))) 
         constraint (first (vals predicates))]
-    (util/ofsFormat "Facet" facet constraint))) 
+    (vector "Facet" facet constraint))) 
 
 (defn translateRestrictions
   "Translate an RDF list of restrictions."
@@ -57,7 +57,7 @@
   (loop [in predicates
          out []]
     (if (= in "rdf:nil")
-      (apply util/ofsFormatNoBrackets out)
+      out ;(apply util/ofsFormatNoBrackets out)
       (recur (:rdf:rest in)
              (conj out (translateFacet (:rdf:first in)))))));recursively translate data types
 
@@ -70,25 +70,25 @@
   "Translate datatype intersection"
   [predicates]
   (let [arguments (translate (:owl:intersectionOf predicates))]
-    (util/ofsFormat "DataIntersectionOf" arguments)))
+    (vec (cons "DataIntersectionOf" arguments))))
 
 (defn translateDatatypeUnion
   "Translate datatype union"
   [predicates]
   (let [arguments (translate (:owl:unionOf predicates))]
-    (util/ofsFormat "DataUnionOf" arguments)))
+    (vec (cons "DataUnionOf" arguments))))
 
 (defn translateDatatypeComplement
   "Translate datatype complement"
   [predicates]
   (let [dataRange (translate (:owl:datatypeComplementOf predicates))]
-    (util/ofsFormat "DataComplementOf" dataRange)))
+    (vector "DataComplementOf" dataRange)))
 
 (defn translateDatatypeOneOf
   "Translate datatype one of"
   [predicates]
   (let [arguments (translateList (:owl:oneOf predicates))]
-    (util/ofsFormat "DataOneOf" arguments)))
+    (vec (cons "DataOneOf" arguments))))
 
 ;;ASSUMPTION: the arguments of the list are strings 
 (defn translateDatatypeRestriction
@@ -96,35 +96,35 @@
   [predicates]
   (let [datatype (translate (:owl:onDatatype predicates))
         arguments (translateRestrictions (:owl:withRestrictions predicates))]
-    (util/ofsFormat "DatatypeRestriction" datatype arguments)))
+    (vec (cons "DatatypeRestriction" (cons datatype arguments)))))
 
 (defn translateDatatypeExistential
   "Translate datatype existential"
   [predicates]
   (let [property (translate (:owl:onProperty predicates));this can be a list
         dataRange (translate (:owl:someValuesFrom predicates))]
-    (util/ofsFormat "DataSomeValuesFrom" property dataRange)))
+    (vector "DataSomeValuesFrom" property dataRange)))
 
 (defn translateDatatypeUniversal
   "Translate datatype universal"
   [predicates]
   (let [property (translate (:owl:onProperty predicates));this can be a list
         dataRange (translate (:owl:allValuesFrom predicates))]
-    (util/ofsFormat "DataAllValuesFrom" property dataRange)))
+    (vector "DataAllValuesFrom" property dataRange)))
 
 (defn translateDatatypeHasValue
   "Translate datatype has value"
   [predicates]
   (let [property (translate (:owl:onProperty predicates));this can be a list
         literal (translate (:owl:hasValue predicates))]
-    (util/ofsFormat "DataHasValue" property literal)))
+    (vector "DataHasValue" property literal)))
 
 (defn translateDatatypeMinCardinality
   "Translate datatype min cardinality"
   [predicates]
   (let [cardinality (util/getNumber (:owl:minCardinality predicates))
         property (translate (:owl:onProperty predicates))]
-    (util/ofsFormat "DataMinCardinality" cardinality property)))
+    (vector "DataMinCardinality" cardinality property)))
 
 (defn translateDatatypeMinQualifiedCardinality
   "Translate datatype min qualified cardinality"
@@ -132,14 +132,14 @@
   (let [cardinality (util/getNumber (:owl:minQualifiedCardinality predicates))
         property (translate (:owl:onProperty predicates))
         dataRange (translate (:owl:onDataRange predicates))]
-    (util/ofsFormat "DataMinCardinality" cardinality property dataRange)))
+    (vector "DataMinCardinality" cardinality property dataRange)))
 
 (defn translateDatatypeMaxCardinality
   "Translate datatype max cardinality"
   [predicates]
   (let [cardinality (util/getNumber (:owl:maxCardinality predicates))
         property (translate (:owl:onProperty predicates))]
-    (util/ofsFormat "DataMaxCardinality" cardinality property)))
+    (vector "DataMaxCardinality" cardinality property)))
 
 (defn translateDatatypeMaxQualifiedCardinality
   "Translate datatype max qualified cardinality"
@@ -147,14 +147,14 @@
   (let [cardinality (util/getNumber (:owl:maxQualifiedCardinality predicates))
         property (translate (:owl:onProperty predicates))
         dataRange (translate (:owl:onDataRange predicates))]
-    (util/ofsFormat "DataMaxCardinality" cardinality property dataRange)))
+    (vector "DataMaxCardinality" cardinality property dataRange)))
 
 (defn translateDatatypeExactCardinality
   "Translate datatype exact cardinality"
   [predicates]
   (let [cardinality (util/getNumber (:owl:cardinality predicates))
         property (translate (:owl:onProperty predicates))]
-    (util/ofsFormat "DataExactCardinality" cardinality property)))
+    (vector "DataExactCardinality" cardinality property)))
 
 (defn translateDatatypeExactQualifiedCardinality
   "Translate datatype exact qualified cardinality"
@@ -162,7 +162,7 @@
   (let [cardinality (util/getNumber (:owl:qualifiedCardinality predicates))
         property (translate (:owl:onProperty predicates))
         dataRange (translate (:owl:onDataRange predicates))]
-    (util/ofsFormat "DataExactCardinality" cardinality property dataRange)))
+    (vector "DataExactCardinality" cardinality property dataRange)))
 
 (defn translateRestriction [predicates]
   (cond
