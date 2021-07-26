@@ -8,7 +8,6 @@
             [wiring.thick2ofn.spec :as owlspec]))
 
 ;TODO data validation
-;TODO equivalent data properties
 
 (declare translate) 
 
@@ -71,7 +70,6 @@
       "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
       "owl:AllDisjointProperties" (translateAllDisjointProperties predicateMap))))
 
-;TODO: all n-ary disjoint properties
 (defn translate
   "Translate predicate map to OFS."
   [predicateMap]
