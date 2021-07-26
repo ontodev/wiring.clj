@@ -2,11 +2,11 @@
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
-            [wiring.thick2ofn.propertyTranslation :as propertyTranslation]
+            [wiring.thick2ofn.expressionTranslation.propertyTranslation :as propertyTranslation]
             [wiring.thick2ofn.expressionTranslation.classTranslation :as classTranslation]
             [wiring.thick2ofn.spec :as owlspec]))
 
-;TODO data validation
+;TODO data validation for return values
 (declare translate)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -34,7 +34,6 @@
   [predicates]
   {:pre [(spec/valid? ::owlspec/thickTriple predicates)]}
   (let [arguments (classTranslation/translate (:owl:members (:object predicates)))]
-  ;(let [arguments (classTranslation/translate (:object predicates))]
     (vec (cons "DisjointClasses" arguments))))
 
 (defn translateEquivalentClasses
