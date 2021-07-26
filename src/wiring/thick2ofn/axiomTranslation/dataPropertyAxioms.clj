@@ -61,7 +61,7 @@
   "Translate owl:AllDisjointProperties"
   [predicates]
   (let [arguments (DPT/translateList (:owl:members (:object predicates)))]
-    (vec (cons "DisjointObjectProperties" arguments))))
+    (vec (cons "DisjointDataProperties" arguments))))
 
 (defn translateType
   "Translate rdf:type for axioms"
