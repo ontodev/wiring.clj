@@ -2,7 +2,8 @@
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
-            [wiring.thick2ofn.expressionTranslation.propertyTranslation :as propertyTranslation]
+            [wiring.thick2ofn.expressionTranslation.propertyTranslation :as propertyTranslation] 
+            [wiring.thick2ofn.typeInference :as typeInference]
             [wiring.thick2ofn.expressionTranslation.classTranslation :as CET]
             [wiring.thick2ofn.expressionTranslation.dataTypeTranslation :as DTT]
             [wiring.thick2ofn.axiomTranslation.objectPropertyAxioms :as OPA]
@@ -13,12 +14,6 @@
 ;TODO data validation
 (declare translate)
 
-(defn is-object-property-expression?
-  "Checks whether an expression is a non-atomic OWL object property expression."
-  [expression]
-  (case (first expression)
-      "ObjectInverseOf" true
-      false))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;               Ambiguous Property Axioms
@@ -29,7 +24,7 @@
   "Translate owl:FunctionalProperty"
   [predicates]
   (let [property (propertyTranslation/translate (:subject predicates))]
-    (if (is-object-property-expression? property)
+    (if (typeInference/is-object-property-expression? property)
       (vector "FunctionalObjectProperty" property)
       (vector "FunctionalProperty" property))))
 
@@ -38,8 +33,8 @@
   [predicates]
   (let [subProperty (propertyTranslation/translate (:subject predicates))
         superProperty (propertyTranslation/translate (:object predicates))]
-    (if (or (is-object-property-expression? subProperty)
-            (is-object-property-expression? superProperty))
+    (if (or (typeInference/is-object-property-expression? subProperty)
+            (typeInference/is-object-property-expression? superProperty))
       (vector "ObjectSubPropertyOf" subProperty superProperty) 
       (vector "SubPropertyOf" subProperty superProperty))))
 
@@ -48,8 +43,8 @@
   [predicates]
   (let [subProperty (propertyTranslation/translate (:subject predicates))
         superProperty (propertyTranslation/translate (:object predicates))]
-    (if (or (is-object-property-expression? subProperty)
-            (is-object-property-expression? superProperty))
+    (if (or (typeInference/is-object-property-expression? subProperty)
+            (typeInference/is-object-property-expression? superProperty))
       (vector "ObjectDisjointProperties" subProperty superProperty)
       (vector "DisjointProperties" subProperty superProperty))))
 
@@ -59,7 +54,7 @@
   ;NB the domain is a class expression for both data and object properties  
   (let [property (propertyTranslation/translate (:subject predicates))
         domain (CET/translate (:object predicates))]
-    (if (is-object-property-expression? property)
+    (if (typeInference/is-object-property-expression? property)
       (vector "PropertyDomain" property domain)
       (vector "ObjectPropertyDomain" property domain)))) 
 
@@ -67,12 +62,14 @@
   "Translate rdfs:domain"
   [predicates]
   (let [property (propertyTranslation/translate (:subject predicates))
-        classRange (CET/translate (:object predicates))
-        dataRange (DTT/translate (:object predicates))]
+        classRange (CET/translate (:object predicates));tentative translation
+        dataRange (DTT/translate (:object predicates))];tentative translation
     (cond
-     (CET/is-class-expression? classRange) (vector "ObjectPropertyDomain" property dataRange)
-     (DTT/is-data-range-expression? dataRange) (vector "DataPropertyDomain" property dataRange)
-     :else (vector "PropertyDomain"))))
+     (typeInference/is-class-expression? classRange) (vector "ObjectPropertyDomain" property classRange)
+     (typeInference/is-data-range-expression? dataRange) (vector "DataPropertyDomain" property dataRange)
+     (typeInference/is-ambiguous-expression? classRange) (vector "PropertyDomain" property classRange)
+     (typeInference/is-ambiguous-expression? dataRange) (vector "PropertyDomain" property dataRange)
+     :else (vector "PropertyDomain" property (:object predicates)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                    Translation
@@ -83,21 +80,19 @@
   "Translate rdf:type for axioms"
   [predicateMap]
   (let [object (:object predicateMap)]
-    (if (string? object)
-      "Thin triple"
-      (case object
-        ;ambiguous property axiom
-        "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
+    (case object
+      ;ambiguous property axiom
+      "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
 
-        ;object property axiom
-        "owl:InverseFunctionalProperty" (OPA/translate predicateMap)
-        "owl:ReflexiveProperty" (OPA/translate predicateMap)
-        "owl:IrreflexiveProperty" (OPA/translate predicateMap)
-        "owl:AsymmetricProperty" (OPA/translate predicateMap)
-        "owl:SymmetricProperty" (OPA/translate predicateMap)
-        "owl:TransitiveProperty" (OPA/translate predicateMap)
-        "";can't translate
-        ))))
+      ;object property axiom
+      "owl:InverseFunctionalProperty" (OPA/translate predicateMap)
+      "owl:ReflexiveProperty" (OPA/translate predicateMap)
+      "owl:IrreflexiveProperty" (OPA/translate predicateMap)
+      "owl:AsymmetricProperty" (OPA/translate predicateMap)
+      "owl:SymmetricProperty" (OPA/translate predicateMap)
+      "owl:TransitiveProperty" (OPA/translate predicateMap)
+      "";can't translate
+      )))
 
 (defn translate
   "Translate predicate map to OFS."
@@ -121,20 +116,16 @@
       "owl:SymmetricProperty" (OPA/translateSymmetricProperty predicateMap) 
       "owl:TransitiveProperty" (OPA/translateTransitiveProperty predicateMap)
 
-      ;ambiguous property axioms
-      ;are translated as "object properties"
-      ;because there is only one object property constructor that could infer the correct type
+      ;ambiguous property axioms (for data and object property axioms)
+      ;NB: all data property axioms are ambiguous
+      "rdfs:subPropertyOf" (translateSubPropertyOf predicateMap)
+      "owl:propertyDisjointWith" (translateDisjointProperties predicateMap)
+      "rdfs:domain" (translateDomain predicateMap)
+      "rdfs:range" (translateRange predicateMap)
 
-      ;that can be either object or data property axioms
-      ;"rdfs:subPropertyOf" (translateSubPropertyOf predicateMap)
-      ;"owl:propertyDisjointWith" (translateDisjointProperties predicateMap)
-      ;"rdfs:domain" (translateDomain predicateMap)
-      ;"rdfs:range" (translateRange predicateMap)
-
-      "rdf:type" (translateType predicateMap);these are thin triples
+      "rdf:type" (translateType predicateMap)
 
       (str "Thin triple?" predicateMap)
-      ;TODO: data property axioms
       ;TODO: data type definitions
       ;TODO: keys
       ;TODO: assertions

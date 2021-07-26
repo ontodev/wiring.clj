@@ -2,28 +2,12 @@
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
+            ;[wiring.thick2ofn.expressionTranslation.classTranslation :as CET]
+            [wiring.thick2ofn.typeInference :as typeInference]
             [wiring.thick2ofn.util :as util]
             [wiring.thick2ofn.spec :as owlspec]))
 
 (declare translate) ;recursive translation (not tail recursive)  
-
-(defn is-data-range-expression?  
-  "Checks whether an expression is a non-atomic OWL datatype expression."
-  [expression]
-    (case (first expression)
-      "DataIntersectionOf" true
-      "DataUnionOf" true
-      "DataComplementOf" true
-      "DatatypeRestriction" true
-      "DataOneOf" true
-      false))
-
-(defn is-typed-as-datatype?
-  "Checks whether input 'expression' is a datatype expression."
-  [expression]
-  (and (map? expression)
-           (contains? expression :rdf:type)
-           (= "rdfs:Datatype" (:rdf:type expression))))  
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -66,11 +50,18 @@
 ;;                   Data Types
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn translateDatatypeIntersection
-  "Translate datatype intersection"
+(defn translateIntersection
+  "Translate an intersection."
   [predicates]
+  {:pre [(spec/valid? ::owlspec/classIntersection predicates)]}
   (let [arguments (translate (:owl:intersectionOf predicates))]
-    (vec (cons "DataIntersectionOf" arguments))))
+    (cond (or (some typeInference/is-class-expression? arguments)
+            (typeInference/is-typed-as-class? predicates)) (vec (cons "ObjectIntersectionOf" arguments))
+          (or (some typeInference/is-data-range-expression? arguments)
+              (typeInference/is-typed-as-datatype? predicates)) (vec (cons "DataIntersectionOf" arguments))
+          :else (vec (cons "IntersectionOf" arguments))))) 
+
+
 
 (defn translateDatatypeUnion
   "Translate datatype union"
@@ -179,7 +170,7 @@
 (defn translateDatatype [predicates]
   "Translate an RDFS datatype expressions with an rdf:type."
   (cond
-    (contains? predicates :owl:intersectionOf) (translateDatatypeIntersection predicates)
+    (contains? predicates :owl:intersectionOf) (translateIntersection predicates)
     (contains? predicates :owl:unionOf) (translateDatatypeUnion predicates)
     (contains? predicates :owl:datatypeComplementOf) (translateDatatypeComplement predicates)
     (contains? predicates :owl:withRestrictions) (translateDatatypeRestriction predicates)

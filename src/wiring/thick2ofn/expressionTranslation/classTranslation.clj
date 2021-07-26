@@ -5,6 +5,7 @@
             [wiring.thick2ofn.util :as util]
             [wiring.thick2ofn.expressionTranslation.propertyTranslation :as property]
             [wiring.thick2ofn.expressionTranslation.dataTypeTranslation :as DTT]
+            [wiring.thick2ofn.typeInference :as typeInference]
             [wiring.thick2ofn.spec :as owlspec]))
 
 (declare translate) ;recursive translation (not tail recursive)  
@@ -81,8 +82,6 @@
 
 ;since we don't have type information available in thick triples
 ;we use an abstraction that will be translated in a second step
-;note that we can translate both object restrictions and data restrictions
-;in the same way in case of ambiguity
 (defn translateExistentialRestriction
   "Translate an existential restriction."
   [predicates]
@@ -94,8 +93,8 @@
     (cond (or (is-typed-as-class? rawFiller) 
             (is-typed-as-object-property? rawProperty)
             (is-class-expression? filler)) (vector "ObjectSomeValuesFrom" onProperty filler)
-          (or (DTT/is-typed-as-datatype? rawFiller)
-              (DTT/is-data-range-expression? filler)) (vector "DataSomeValuesFrom" onProperty filler)
+          (or (typeInference/is-typed-as-datatype? rawFiller)
+              (typeInference/is-data-range-expression? filler)) (vector "DataSomeValuesFrom" onProperty filler)
           :else (vector "SomeValuesFrom" onProperty filler))))
 
 (defn translateUniversalRestriction
@@ -109,8 +108,8 @@
     (cond (or (is-typed-as-class? rawFiller)
             (is-typed-as-object-property? rawProperty)
             (is-class-expression? filler)) (vector "ObjectAllValuesFrom" onProperty filler)
-          (or (DTT/is-typed-as-datatype? rawFiller)
-              (DTT/is-data-range-expression? filler)) (vector "DataSomeValuesFrom" onProperty filler)
+          (or (typeInference/is-typed-as-datatype? rawFiller)
+              (typeInference/is-data-range-expression? filler)) (vector "DataSomeValuesFrom" onProperty filler)
           :else (vector "AllValuesFrom" onProperty filler))))
 
 (defn translateHasValueRestriction
@@ -205,8 +204,8 @@
   (let [arguments (translate (:owl:intersectionOf predicates))]
     (cond (or (some is-class-expression? arguments)
             (is-typed-as-class? predicates)) (vec (cons "ObjectIntersectionOf" arguments))
-          (or (some DTT/is-data-range-expression? arguments)
-              (DTT/is-typed-as-datatype? predicates)) (vec (cons "DataIntersectionOf" arguments))
+          (or (some typeInference/is-data-range-expression? arguments)
+              (typeInference/is-typed-as-datatype? predicates)) (vec (cons "DataIntersectionOf" arguments))
           :else (vec (cons "IntersectionOf" arguments)))))
 
 (defn translateUnion
@@ -216,8 +215,8 @@
   (let [arguments (translate (:owl:unionOf predicates))]
     (cond (or (some is-class-expression? arguments)
             (is-typed-as-class? predicates)) (vec (cons "ObjectUnionOf" arguments))
-          (or (some DTT/is-data-range-expression? arguments)
-              (DTT/is-typed-as-datatype? predicates)) (vec (cons "DataUnionOf" arguments))
+          (or (some typeInference/is-data-range-expression? arguments)
+              (typeInference/is-typed-as-datatype? predicates)) (vec (cons "DataUnionOf" arguments))
           :else (vec (cons "UnionOf" arguments)))))
 
 (defn translateOneOf
@@ -234,8 +233,8 @@
   (let [argument (translate (:owl:complementOf predicates))]
     (cond (or (is-class-expression? argument)
             (is-typed-as-class? predicates)) (vector "ObjectComplementOf" argument)
-          (or (DTT/is-data-range-expression? argument)
-            (DTT/is-typed-as-datatype? predicates)) (vector "DataComplementOf" argument)
+          (or (typeInference/is-data-range-expression? argument)
+            (typeInference/is-typed-as-datatype? predicates)) (vector "DataComplementOf" argument)
           :else (vector "ComplementOf" argument))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
