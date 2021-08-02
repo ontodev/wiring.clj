@@ -83,6 +83,18 @@
 ;;                    Translation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn translateThinTriples
+  "Translate ThinTriples"
+  [predicateMap]
+  (let [subject (:subject predicateMap)
+        predicate (:predicate predicateMap)
+        object (:object predicateMap)]
+    (if (and (string? subject)
+             (string? predicate)
+             (string? object))
+      (vector "ThinTriple" subject predicate object)
+      (vector "Error" subject predicate object))))
+
 
 (defn translateType
   "Translate rdf:type for axioms"
@@ -100,7 +112,7 @@
       "owl:AsymmetricProperty" (OPA/translate predicateMap)
       "owl:SymmetricProperty" (OPA/translate predicateMap)
       "owl:TransitiveProperty" (OPA/translate predicateMap)
-      "";can't translate
+      (translateThinTriples predicateMap)
       )))
 
 (defn translate
@@ -134,7 +146,10 @@
 
       "rdf:type" (translateType predicateMap)
 
-      (str "Thin triple?" predicateMap)
+      (translateThinTriples predicateMap)
+
+
+      ;(str "Thin triple?" predicateMap)
       ;TODO: data type definitions
       ;TODO: keys
       ;TODO: assertions
