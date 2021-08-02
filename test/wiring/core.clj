@@ -3,7 +3,7 @@
             [wiring.thick2ofn.parsing :as p]
             [cheshire.core :as cs]
             [clojure.java.io :as io]
-            [wiring.thick2ofn.axiomTranslation :as thick2ofn]
+            [wiring.thick2ofn.axiomTranslation.translate :as thick2ofn]
             [wiring.ofn2thick.axiomTranslation :as ofn2thick]))
 
 (defn thick-ofn-thick-round-trip
@@ -12,7 +12,7 @@
   'OFN-S expression' back to
   'thick tripels'"
   [inputString] 
-    (def thick2ofnTranslation (thick2ofn/translate (p/parse inputString)))
+    (def thick2ofnTranslation (cs/generate-string (thick2ofn/translate (p/parse inputString))))
     (def ofn2thickTranslation (ofn2thick/translate (cs/parse-string thick2ofnTranslation)))
     (= (p/parse inputString) (p/parse ofn2thickTranslation)))
 
