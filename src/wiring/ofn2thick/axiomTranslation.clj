@@ -78,6 +78,16 @@
         closing (str object "}")]
     closing))
 
+(defn translateThinTriple
+  "Translate Thin Triples"
+  [ofn]
+  (let [[op s p o] ofn
+        subject (str "{\"subject\": " s ", ")
+        predicate (str subject "\"predicate\": " p ",")
+        object (str predicate "\"object\": " o)
+        closing (str object "}")]
+    closing)) 
+
 (defn translate
   "Translate OFN-S expression to tick triple"
   [ofn]
@@ -89,6 +99,7 @@
       "DisjointUnion" (translateDisjointUnion ofn)
       "DisjointClasses" (translateDisjointClasses ofn)
       "EquivalentClasses" (translateEquivalentClasses ofn)
+      "ThinTriple" (translateThinTriple ofn)
       ;;object property  axioms
       ;"rdfs:subPropertyOf" (translateSubObjectPropertyOf predicateMap)
       ;"owl:propertyChainAxiom" (translateSubObjectPropertyOf predicateMap)
