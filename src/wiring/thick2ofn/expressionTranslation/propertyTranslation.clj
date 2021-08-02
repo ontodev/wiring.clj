@@ -23,9 +23,7 @@
 (defn translateInverseOf
   "Translate the inverse of a property"
   [predicates]
-  {:pre [(spec/valid? ::owlspec/inverseOf predicates)]
-   ;:post [(spec/valid? string? %)]
-   }
+  {:pre [(spec/valid? ::owlspec/inverseOf predicates)]}
   (let [property (translate (:owl:inverseOf predicates))];you can nest inverses..
     (vector "ObjectInverseOf" property)))
 
