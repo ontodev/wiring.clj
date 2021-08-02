@@ -36,7 +36,7 @@
         rdfType (str property "\"rdf:type\": [{\"object\": \"owl:Restriction\"}]")
         closing (str rdfType "}")]
       ;(println (str op "," property "," filler))
-    closing))
+    closing)) 
 
 (defn translateObjectAllValuesFrom
   "Translate a ObjectAllValuesFrom expression"
@@ -247,5 +247,15 @@
       "ObjectOneOf"  (translateObjectOneOf ofn)
       "ObjectComplementOf"  (translateObjectComplement ofn)
       "ObjectHasSelf"  (translateObjectHasSelf ofn)
+      ;translate ambiguous OFN-S expressions
+      ;note that the translation for ambiguous OFN-S expressions is
+      ;the same
+      "SomeValuesFrom" (translateObjectSomeValuesFrom ofn)
+      "AllValuesFrom" (translateObjectAllValuesFrom ofn)
+      "HasValue" (translateObjectHasValue ofn)
+      "MaxCardinality" (translateObjectMaxCardinality ofn)
+      "MinCardinality" (translateObjectMinCardinality ofn)
+      "ExactCardinality" (translateObjectExactCardinality ofn)
+      "OneOf" (translateObjectOneOf ofn)
       (str \" ofn \"))))
 

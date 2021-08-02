@@ -33,15 +33,21 @@
 
 (spec/def ::someValuesFrom (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 3)
-                             (spec/cat :operator #(= % "ObjectSomeValuesFrom") :property ::propertyExpression :filler ::classExpression)))
+                             (spec/cat :operator #(or (= % "ObjectSomeValuesFrom")
+                                                     (= % "SomeValuesFrom"))
+                                       :property ::propertyExpression :filler ::classExpression)))
 
 (spec/def ::allValuesFrom (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 3)
-                             (spec/cat :operator #(= % "ObjectAllValuesFrom") :property ::propertyExpression :filler ::classExpression)))
+                             (spec/cat :operator #(or (= % "ObjectAllValuesFrom")
+                                                     (= % "AllValuesFrom"))
+                                       :property ::propertyExpression :filler ::classExpression)))
 
 (spec/def ::hasValue (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 3)
-                             (spec/cat :operator #(= % "ObjectHasValue") :property ::propertyExpression :filler ::classExpression)))
+                             (spec/cat :operator #(or (= % "ObjectHasValue")
+                                                     (= % "HasValue"))
+                                       :property ::propertyExpression :filler ::classExpression)))
 
 (spec/def ::hasSelf (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 2)
@@ -49,7 +55,9 @@
 
 (spec/def ::minCardinality (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 3)
-                             (spec/cat :operator #(= % "ObjectMinCardinality") :cardinality string-Number? :property ::propertyExpression)))
+                             (spec/cat :operator #(or (= % "ObjectMinCardinality")
+                                                     (= % "MinCardinality"))
+                                       :cardinality string-Number? :property ::propertyExpression)))
 
 (spec/def ::minQualifiedCardinality (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 4)
@@ -57,7 +65,9 @@
 
 (spec/def ::maxCardinality (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 3)
-                             (spec/cat :operator #(= % "ObjectMaxCardinality") :cardinality string-Number? :property ::propertyExpression)))
+                             (spec/cat :operator #(or (= % "ObjectMaxCardinality")
+                                                     (= % "MaxCardinality"))
+                                       :cardinality string-Number? :property ::propertyExpression)))
 
 (spec/def ::maxQualifiedCardinality (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 4)
@@ -69,7 +79,9 @@
 
 (spec/def ::exactCardinality (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 3)
-                             (spec/cat :operator #(= % "ObjectExactCardinality") :cardinality string-Number? :property ::propertyExpression)))
+                             (spec/cat :operator #(or (= % "ObjectExactCardinality")
+                                                     (= % "ExactCardinality"))
+                                       :cardinality string-Number? :property ::propertyExpression)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Propositional Connectives for Class Expressions
@@ -85,7 +97,9 @@
 
 (spec/def ::oneOf (spec/and 
                              (spec/coll-of string-or-coll? :kind seq)
-                             (spec/cat :operator #(= % "ObjectOneOf") :arguments (spec/* ::individual))))
+                             (spec/cat :operator #(or (= % "ObjectOneOf")
+                                                     (= % "OneOf"))
+                                       :arguments (spec/* ::individual))))
 
 (spec/def ::classComplement (spec/and 
                              (spec/coll-of string-or-coll? :kind seq :count 2)
