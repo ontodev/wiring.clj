@@ -13,7 +13,7 @@
   'thick tripels'"
   [inputString] 
     (def thick2ofnTranslation (cs/generate-string (thick2ofn/translate (p/parse inputString))))
-    (def ofn2thickTranslation (ofn2thick/translate (cs/parse-string thick2ofnTranslation)))
+    (def ofn2thickTranslation (cs/generate-string (ofn2thick/translate (cs/parse-string thick2ofnTranslation))))
     (= (p/parse inputString) (p/parse ofn2thickTranslation)))
 
 ;unit test for existential restriction
