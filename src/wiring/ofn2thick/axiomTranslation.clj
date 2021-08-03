@@ -14,79 +14,67 @@
   "Translate class expressions into an RDF list"
   [expressions]
   (loop [in (reverse expressions);constructing list from last element to first
-         out "\"rdf:nil\""]
+         out "rdf:nil"]
     (if (empty? in)
       out
       (recur (rest in)
-             (str "{\"rdf:first\": [{\"object\": " (classTranslation/translate (first in)) "}], " "\"rdf:rest\": [{\"object\": " out "}]}")))))
+             {:rdf:first [{:object (classTranslation/translate (first in)) }]
+              :rdf:rest [{:object out}]}))))
 
 (defn translateEquivalentClasses
   "Translate a EquivalentClasses axiom"
   [ofn]
-  {:pre [(spec/valid? ::owlspec/equivalentClasses ofn)]
-   :post [(spec/valid? string? %)]}
+  {:pre [(spec/valid? ::owlspec/equivalentClasses ofn)]}
   (if (= 3 (count ofn))
     (let [[operator lhs rhs] ofn;non-list case
-          subject (str "{\"subject\": " (classTranslation/translate lhs) ", ")
-          predicate (str subject "\"predicate\": \"owl:equivalentClass\", ")
-          object (str predicate "\"object\": " (classTranslation/translate rhs))
-          closing (str object "}")]
-      closing)
+          triple {:subject (classTranslation/translate lhs)
+                  :predicate "owl:equivalentClass"
+                  :object (classTranslation/translate rhs)}]
+      triple) 
     (let [[operator & arguments] ofn;list case
-          subject (str "{\"subject\": \"" (gensym "_:genid") "\", ");use class translation 
-          predicate (str subject "\"predicate\": \"owl:equivalentClass\", ")
-          operands (translateList arguments)
-          object (str predicate "\"object\": " operands)
-          closing (str object "}")]
-      closing)))
+          triple {:subject (gensym "_:genid")
+                  :predicate "owl:equivalentClass"
+                  :object (translateList arguments)}]
+      triple))) 
 
 (defn translateDisjointClasses
   "Translate a DisjointClasses axiom"
   [ofn]
-  {:pre [(spec/valid? ::owlspec/disjointClasses ofn)]
-   :post [(spec/valid? string? %)]}
+  {:pre [(spec/valid? ::owlspec/disjointClasses ofn)]}
   (let [[operator & arguments] ofn
-        subject (str "{\"subject\": \"" (gensym "_:genid") "\", ");use class translation 
-        predicate (str subject "\"predicate\": \"owl:allDisjointClasses\", ")
-        operands (translateList arguments)
-        object (str predicate "\"object\": {\"owl:members\": " operands "}")
-        closing (str object "}")]
-    closing))
+        triple {:subject (gensym "_:genid")
+                :predicate "owl:AllDisjointClasses"
+                :object {:owl:members (translateList arguments)}}]
+    triple))
 
 (defn translateDisjointUnion
   "Translate a DisjointUnion axiom"
   [ofn]
-  {:pre [(spec/valid? ::owlspec/disjointUnion ofn)]
-   :post [(spec/valid? string? %)]}
+  {:pre [(spec/valid? ::owlspec/disjointUnion ofn)]}
   (let [[operator lhs & arguments] ofn
-        subject (str "{\"subject\": " (classTranslation/translate lhs) ", ");use class translation 
-        predicate (str subject "\"predicate\": \"owl:disjointUnionOf\", ")
-        operands (translateList arguments)
-        object (str predicate "\"object\": " operands)
-        closing (str object "}")]
-    closing))
+        triple {:subject (classTranslation/translate lhs)
+                :predicate "owl:disjointUnionOf"
+                :object (translateList arguments)}]
+    triple)) 
 
 (defn translateSubclassOf
   "Translate a SubClassOf axiom"
   [ofn]
-  {:pre [(spec/valid? ::owlspec/subclassOf ofn)]
-   :post [(spec/valid? string? %)]}
+  {:pre [(spec/valid? ::owlspec/subclassOf ofn)]}
   (let [[op lhs rhs] ofn
-        subject (str "{\"subject\": " (classTranslation/translate lhs) ", ");use class translation
-        predicate (str subject "\"predicate\": \"rdfs:subClassOf\", ")
-        object (str predicate "\"object\": " (classTranslation/translate rhs))
-        closing (str object "}")]
-    closing))
+        triple {:subject (classTranslation/translate lhs)
+                :predicate "rdfs:subClassOf"
+                :object (classTranslation/translate rhs)}]
+    triple))
 
 (defn translateThinTriple
   "Translate Thin Triples"
   [ofn]
   (let [[op s p o] ofn
-        subject (str "{\"subject\": " s ", ")
-        predicate (str subject "\"predicate\": " p ",")
-        object (str predicate "\"object\": " o)
-        closing (str object "}")]
-    closing)) 
+        triple {:subject s
+                :predicate p
+                :object o}]
+    triple)) 
 
 (defn translate
   "Translate OFN-S expression to tick triple"
@@ -114,5 +102,5 @@
       ;TODO: keys
       ;TODO: assertions
       ;TODO: annotations 
-      (str \" ofn \"))))
+      ofn \")))
 

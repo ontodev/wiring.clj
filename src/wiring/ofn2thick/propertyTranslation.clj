@@ -11,13 +11,10 @@
 (defn translateInverseOf
   "Translate ObjectInverseOf expression"
   [ofn]
-  {:pre [(spec/valid? ::owlspec/inverseOf ofn)]
-   :post [(spec/valid? string? %)]}
+  {:pre [(spec/valid? ::owlspec/inverseOf ofn)]}
   (let [[op arg] ofn
-        inverse "{\"owl:inverseOf\": "
-        operand (str inverse "[{\"object\": " (translate arg) "}]")
-        closing (str operand "}")]
-    closing))
+        triple {:owl:inverseOf [{:object (translate arg) }]}]
+    triple))
 
 (defn translate
   "Translate OFN-S property expression into predicate map"
@@ -25,4 +22,4 @@
   ;(println ofn)
   (if (= "ObjectInverseOf" (first ofn))
     (translateInverseOf ofn)
-    (str "\"" ofn "\"")))
+    ofn)) 
