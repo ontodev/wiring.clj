@@ -65,11 +65,11 @@
         classRange (CET/translate (:object predicates));tentative translation
         dataRange (DTT/translate (:object predicates))];tentative translation
     (cond
-     (typeInference/is-class-expression? classRange) (vector "ObjectPropertyDomain" property classRange)
-     (typeInference/is-data-range-expression? dataRange) (vector "DataPropertyDomain" property dataRange)
-     (typeInference/is-ambiguous-expression? classRange) (vector "PropertyDomain" property classRange)
-     (typeInference/is-ambiguous-expression? dataRange) (vector "PropertyDomain" property dataRange)
-     :else (vector "PropertyDomain" property (:object predicates)))))
+     (typeInference/is-class-expression? classRange) (vector "ObjectPropertyRange" property classRange)
+     (typeInference/is-data-range-expression? dataRange) (vector "DataPropertyRange" property dataRange)
+     (typeInference/is-ambiguous-expression? classRange) (vector "PropertyRange" property classRange)
+     (typeInference/is-ambiguous-expression? dataRange) (vector "PropertyRange" property dataRange)
+     :else (vector "PropertyRange" property (:object predicates)))))
 
 (defn translateAllDisjointProperties 
   "Translate owl:AllDisjointProperties"
@@ -86,6 +86,7 @@
 (defn translateThinTriples
   "Translate ThinTriples"
   [predicateMap]
+  ;(println (:subject predicateMap))
   (let [subject (:subject predicateMap)
         predicate (:predicate predicateMap)
         object (:object predicateMap)]
@@ -148,8 +149,6 @@
 
       (translateThinTriples predicateMap)
 
-
-      ;(str "Thin triple?" predicateMap)
       ;TODO: data type definitions
       ;TODO: keys
       ;TODO: assertions
