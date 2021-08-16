@@ -40,12 +40,17 @@
 (defn translateDisjointClasses
   "Translate a DisjointClasses axiom"
   [ofn]
-  {:pre [(spec/valid? ::owlspec/disjointClasses ofn)]}
+  {:pre [(spec/valid? ::owlspec/disjointClasses ofn)]} 
   (let [[operator & arguments] ofn
         triple {:subject (gensym "_:genid")
                 :predicate "owl:AllDisjointClasses"
-                :object {:owl:members (translateList arguments)}}]
-    triple))
+                :object {:owl:members (translateList arguments)}}
+        tuple {:subject (classTranslation/translate (first arguments))
+               :predicate "owl:disjointWith"
+               :object (classTranslation/translate (second arguments))}]
+    (if (= (count arguments) 2)
+      tuple
+      triple)))
 
 (defn translateDisjointUnion
   "Translate a DisjointUnion axiom"

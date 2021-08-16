@@ -44,8 +44,13 @@
   (let [[operator & arguments] ofn
         triple {:subject (gensym "_:genid")
                 :predicate "owl:AllDisjointClasses"
-                :object {:owl:members (translateList arguments)}}]
-    triple))
+                :object {:owl:members (translateList arguments)}}
+        tuple {:subject (classTranslation/translate (first arguments))
+               :predicate "owl:disjointWith"
+               :object (classTranslation/translate (second arguments))}]
+    (if (= (count arguments) 2)
+      tuple
+      triple)))
 
 (defn translateDisjointUnion
   "Translate a DisjointUnion axiom"
@@ -80,13 +85,12 @@
   "Translate OFN-S expression to thick triple"
   [ofn]
   (let [operator (first ofn)];
-    ;(println predicateMap)
     (case operator
       ;class expression axioms
       "SubClassOf" (translateSubclassOf ofn)
       "DisjointUnion" (translateDisjointUnion ofn)
       "DisjointClasses" (translateDisjointClasses ofn)
       "EquivalentClasses" (translateEquivalentClasses ofn)
-      "ThinTriple" (translateThinTriple ofn)
-      (str "ERROR: " ofn)))) ;this should never be called
+      ;"ThinTriple" (translateThinTriple ofn) ; this case should not be called
+      (str "ERROR: " ofn)))) ;this case should also not be called
 
