@@ -4,12 +4,11 @@
             [clojure.set :as s]
             [clojure.string :as string]
             [cheshire.core :as cs])
-            ;[wiring.thick2ofn.parsing :as p]
   (:gen-class))
 
 ;TODO reification
 ;TODO special cases involving blank node generation
-;TODO tail recursion / iteration
+;TODO tail recursion / iteration (not really necessary? performance gain is not significant)
 
 (defn map-subject-2-thin-triples
   [thin-triples]
@@ -33,13 +32,15 @@
   [triples subject-2-thin-triples]
    (into [] (map #(hash-map :object (node-2-thick-map (nth % 2) subject-2-thin-triples)) triples))) 
 
-;this translates a blank node to a thick triple
+;TODO: would this work for a "root blank node"? (no - all blank nodes get replaced with a predicate map)
 (defn node-2-thick-map
   [node subject-2-thin-triples]
+  """Given a node, i.e., a subject and a map from subjects to triples,
+    returns a thick triple with 'node' as a subject"""
   (if (is-blank-node? node)
     (let [triples (get subject-2-thin-triples node)
-          predicates (group-by second triples)]
-      (map-on-hash-map-vals #(triples-2-object % subject-2-thin-triples) predicates)) 
+          predicates (group-by second triples)]; create predicate map 
+      (map-on-hash-map-vals #(triples-2-object % subject-2-thin-triples) predicates)) ;recurse on all predicate maps
     node))
 
 (defn root-triples
@@ -53,6 +54,7 @@
         root-triples (filter #(contains? root (first %)) triples)]
     root-triples))
 
+;TODO: impose an ordering
 (defn thin-2-thick
   ([triples]
    """Given a set of thin triples, return the corresponding set of thick triples."""
@@ -70,10 +72,17 @@
         subject (node-2-thick-map s subject-2-thin-triples)
         predicate (node-2-thick-map p subject-2-thin-triples)
         object (node-2-thick-map o subject-2-thin-triples)]
-    {:subject subject, :predicate predicate, :object object})))
+    {:subject subject, :predicate predicate, :object object}))) 
 
-
-
+;sort json recursively by its string representation
+;TODO test this
+(defn sort-json
+  [s];expect this to be a string
+  (let [m (cs/parse-string s)]
+    (cond
+      (map? m) (cs/generate-string (into (sorted-map) (map-on-hash-map-vals #(cs/parse-string (sort-json (cs/generate-string %))) m)));sort by key
+      (coll? m) (cs/generate-string (into [] (map cs/parse-string (sort (map #(sort-json (cs/generate-string %)) m)))))
+      :else (cs/generate-string m))))
 
 (defn -main
   "Currently only used for manual testing."
@@ -84,21 +93,33 @@
                ["_:B", "owl:someValuesFrom", "_:C"],
                ["_:C", "rdf:type", "owl:Restriction"],
                ["_:C", "owl:onProperty", "ex:p"],
+               ["_:C", "owl:onProperty", "ex:a"],
+               ["_:C", "owl:onProperty", "_:E"],
+               ["_:E", "owl:onProperty3", "F"],
+               ["_:E", "owl:onProperty2", "E"],
                ["_:C", "owl:someValuesFrom", "D"],
                ["ex:B", "ex:d", "ex:C"],
                ["ex:D", "ex:p", "ex:F"],
                ["ex:D", "ex:p", "ex:G"]]
                  )
   (def s2t (map-subject-2-thin-triples t))
-  (println s2t)
-  (def ii (node-2-thick-map "ex:A" s2t))
+  ;(println s2t)
+  ;(def ii (node-2-thick-map "ex:A" s2t))
+  (def ii (node-2-thick-map "_:B" s2t))
   (println ii)
-  (println (cs/generate-string ii)) 
+  ;(println (cs/generate-string ii))
+  ;(println (cs/parse-string (cs/generate-string ii)))
 
-  (println (map #(thin-2-thick % s2t) (root-triples t)))
+  ;parse-string
+  (println (sort-json (cs/generate-string ii)))
+  ;(println (cs/generate-string (into (sorted-map) ii)))
+  ;(println (cs/generate-string ii)) 
+  ;(println (map #(thin-2-thick % s2t) (root-triples t)))
 
-  (println (thin-2-thick t))
-  
+
+  ;(println t)
+  ;(println "")
+  ;(println (thin-2-thick t)) 
   )
 
 
