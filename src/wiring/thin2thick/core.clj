@@ -74,15 +74,13 @@
         object (node-2-thick-map o subject-2-thin-triples)]
     {:subject subject, :predicate predicate, :object object}))) 
 
-;sort json recursively by its string representation
-;TODO test this
 (defn sort-json
-  [s];expect this to be a string
-  (let [m (cs/parse-string s)]
+  [m]
+  """Given a JSON value, return a lexicographically ordered representation"""
     (cond
-      (map? m) (cs/generate-string (into (sorted-map) (map-on-hash-map-vals #(cs/parse-string (sort-json (cs/generate-string %))) m)));sort by key
-      (coll? m) (cs/generate-string (into [] (map cs/parse-string (sort (map #(sort-json (cs/generate-string %)) m)))))
-      :else (cs/generate-string m))))
+      (map? m) (into (sorted-map) (map-on-hash-map-vals sort-json m));sort by key
+      (coll? m) (into [] (map cs/parse-string (sort (map #(cs/generate-string (sort-json %)) m))))
+      :else m))
 
 (defn -main
   "Currently only used for manual testing."
@@ -111,7 +109,7 @@
   ;(println (cs/parse-string (cs/generate-string ii)))
 
   ;parse-string
-  (println (sort-json (cs/generate-string ii)))
+  (println (cs/generate-string (sort-json ii)))
   ;(println (cs/generate-string (into (sorted-map) ii)))
   ;(println (cs/generate-string ii)) 
   ;(println (map #(thin-2-thick % s2t) (root-triples t)))
