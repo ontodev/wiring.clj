@@ -6,11 +6,6 @@
             [cheshire.core :as cs])
   (:gen-class))
 
-;TODO reification (the current implementation should still work -  but we may want to filter out some things)
-;-we can represent annotations as self-standing thick triples
-;-attaching them to their actual trples as annotations should be done in a separate step
-;TODO special cases involving blank node generation
-;TODO general blank node handling for RDF
 ;TODO tail recursion / iteration (not really necessary? performance gain is not significant)
 
 (defn map-subject-2-thin-triples
@@ -103,8 +98,9 @@
     return all triples that are at the root of a blank node dependency chain, i.e.
     triples s.t. its subject is not a blank node that occurs as an object in another triple."""
   (let [subjects (set (map first triples))
-        objects (set (map #(nth % 2) triples))
-        root (s/difference subjects objects)
+        objects (map #(nth % 2) triples)
+        object-blanknode (set (filter is-blank-node? objects))
+        root (s/difference subjects object-blanknode)
         root-triples (filter #(contains? root (first %)) triples)]
     root-triples))
 
@@ -157,6 +153,7 @@
   ;introduce dummy ;blank nodes;
  ;dont't translate root blank nodes?
   (def annotation [;["wiring:blanknode", "owl:AxiomAnnotatino", "_:B"],
+                   ["obo:BFO_0000020", "obo:IAO_0000602", "asd"],
                    ["_:B", "obo:IAO_0010000", "obo:050-003"],
                    ["_:B", "owl:annotatedTarget", "asd"],
                    ["_:B", "owl:annotatedProperty", "obo:IAO_0000602"],
@@ -174,7 +171,10 @@
   (def s2t (map-subject-2-thin-triples t))
   (run! println (map cs/generate-string (thin-2-thick annotation)))
   (println (thin-2-thick disjointClasses))
+  (println "")
   (println (thin-2-thick annotation))
+  (println "")
+
 
   (println (str "wiring:" (gensym)))
 
