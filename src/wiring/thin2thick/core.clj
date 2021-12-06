@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [clojure.set :as s]
             [clojure.string :as string]
+            [wiring.thin2thick.thick-post-processing :as post]
             [cheshire.core :as cs])
   (:gen-class))
 
@@ -175,6 +176,7 @@
   (println (thin-2-thick annotation))
   (println "")
 
+  (println (post/get-annotations-for-assertions (thin-2-thick annotation)))
 
   (println (str "wiring:" (gensym)))
 
