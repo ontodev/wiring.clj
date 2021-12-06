@@ -45,12 +45,35 @@
       (= number-of-types 0) "unknown"
       (= number-of-types 1) (nth (first typing-triples) 2)
       :else "ambiguous")))
-  
 
+;This works okay for
+;-rdf:type owl:AllDisjointClasses
+;-rdf:type owl:AllDisjointProperties .
+;-rdf:type owl:AllDifferent
+;-rdf:type owl:NegativePropertyAssertion ;
 (defn encode-blank-nodes
   [triples]
-  """Given a set of triples, identify root blank nodes and add triples s.t.
-    root blank nodes appear as objects in a newly added triple"""
+  """Given a set of triples,
+    identify root blank nodes and add triples of the form
+
+    [wiring:blanknode:id type _:blankNode]
+
+    where 'wiring:blanknode:id' is a newly generated subject,
+    type is the rdf:type of the identified root _:blankNode,
+    and _:blankNode is the root node. 
+
+    For example given the triples:
+
+       [_:B, obo:IAO_0010000, obo:050-003]
+       [_:B, owl:annotatedTarget, 'target']
+       [_:B, owl:annotatedProperty, obo:IAO_0000602]
+       [_:B, owl:annotatedSource, obo:BFO_0000020]
+       [_:B, rdf:type, owl:Axiom]
+
+    the following triple would be added:
+
+       [wiring:blanknode:1, rdf:type, _:B] 
+    """
   (let [subject-to-triples (group-by first triples)
         subjects (set (map first triples))
         objects (set (map #(nth % 2) triples))
@@ -60,14 +83,6 @@
                                 (get-type (get subject-to-triples %))
                                 %) blank-roots)] 
     (concat triples additions)))
-  ;find root blank nodes
-  ;identify their type
-  ;-rdf:type owl:AllDisjointClasses
-  ;-rdf:type owl:AllDisjointProperties .
-  ;-rdf:type owl:AllDifferent
-  ;-rdf:type owl:NegativePropertyAssertion
-  ;-rdf:type rdfs:Datatype
-  ; owl:inverseOf T(OP) . [NOTE this is not a type]
 
 
 
