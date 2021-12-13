@@ -7,6 +7,51 @@
   (:gen-class))
 ;TODO CURIEs
 
+;TODO: problem with (nested) annotations
+;Consider the following triples
+
+;["a:Peter" "rdfs:label", "Peter Griffin"],
+
+;["_:x", "rdf:type", "owl:Annotation"],
+;["_:x", "owl:annotatedSource", "a:Peter"],
+;["_:x", "owl:annotatedProperty", "rdfs:label"],
+;["_:x", "owl:annotatedTarget", "Peter Griffin"],
+;["_:x", "a:author", "a:Seth_MacFarlane"],
+
+;["_:y", "rdf:type", "owl:Annotation"],
+;["_:y", "owl:annotatedSource", "_:x"],
+;["_:y", "owl:annotatedProperty", "a:author"],
+;["_:y", "owl:annotatedTarget", "a:Seth_MacFarlane"],
+;["_:y", "r:hasRole", "r:Curator"]])
+
+;these will get translated into 
+
+;{annotation {a:author [{value a:Seth_MacFarlane}],
+;             annotation {r:hasRole [{value r:Curator}]}},
+; object Peter Griffin,
+; predicate rdfs:label,
+; subject a:Peter}
+
+;this is fine.
+;However, if we are dealing with multiple annotations on a given triple, e.g.
+
+;["_:x", "rdf:type", "owl:Annotation"],
+;["_:x", "owl:annotatedSource", "a:Peter"],
+;["_:x", "owl:annotatedProperty", "rdfs:label"],
+;["_:x", "owl:annotatedTarget", "Peter Griffin"],
+;["_:x", "a:author", "a:Seth_MacFarlane"],
+;["_:x", "a:createdAt", "18.02.2021"],      <---- added
+
+;then this gets translated into 
+
+;{annotation {a:author [{value a:Seth_MacFarlane}],
+;             a:createdAt [{value 18.02.2021}],
+;             annotation {r:hasRole [{value r:Curator}]}}, <--- it's not clear that this annotates a:author and not a:createdAt
+; object Peter Griffin,
+; predicate rdfs:label,
+; subject a:Peter}
+
+
 (defn is-annotation-map?
   [predicate-map]
   (and
