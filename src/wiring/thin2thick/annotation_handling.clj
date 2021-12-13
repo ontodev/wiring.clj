@@ -1,4 +1,4 @@
-(ns wiring.thin2thick.thick-post-processing
+(ns wiring.thin2thick.annotation-handling
   (:require [clojure.repl :as repl]
             [clojure.java.io :as io]
             [clojure.set :as s]
@@ -50,7 +50,6 @@
 ; object Peter Griffin,
 ; predicate rdfs:label,
 ; subject a:Peter}
-
 
 (defn is-annotation-map?
   [predicate-map]
@@ -124,8 +123,6 @@
     (if (map? subject) 
       (encode-raw-annotation-map-recursion predicate-map)
       (encode-raw-annotation-map-base predicate-map))))
-
-
 
 
 ;TODO: :object and (get coll object) should be used consistently

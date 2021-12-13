@@ -3,7 +3,7 @@
             [clojure.java.io :as io]
             [clojure.set :as s]
             [clojure.string :as string]
-            [wiring.thin2thick.thick-post-processing :as post]
+            [wiring.thin2thick.annotation-handling :as post]
             [cheshire.core :as cs])
   (:gen-class))
 
@@ -134,6 +134,23 @@
         object (node-2-thick-map o subject-2-thin-triples)]
     {:subject subject, :predicate predicate, :object object}))) 
 
+;TODO compare maps so that they can be ordered
+;note to self: you need this because you want to order thick triples
+;so that you can match triples to their annotations quickly 
+;(defn com
+;  [m1 m2]
+;  (let [s1 (:subject m1)
+;        s2 (:subject m2)
+;        p1 (:predicate m1)
+;        p2 (:predicate m2) 
+;        o1 (:predicate m1)
+;        o2 (:predicate m2)
+;        s-comp (compare s1 s2)
+;        p-comp (compare p1 p2)
+;        o-comp (compare o1 o2)]
+;    (cond 
+;      (not (= (compare s1 s2)
+
 (defn -main
   "Currently only used for manual testing."
   [& args]
@@ -169,14 +186,74 @@
                         ["_:B4", "rdf:rest", "rdf:nil"],
                         ["_:B4", "rdf:first", "obo:BFO_0000147"]])
 
-  (def s2t (map-subject-2-thin-triples t))
-  (run! println (map cs/generate-string (thin-2-thick annotation)))
-  (println (thin-2-thick disjointClasses))
+  (def merged [ 
+                   ["obo:BFO_0000020", "obo:IAO_0000602", "asd"],
+                   ["_:B", "obo:IAO_0010000", "obo:050-003"],
+                   ["_:B", "owl:annotatedTarget", "asd"],
+                   ["_:B", "owl:annotatedProperty", "obo:IAO_0000602"],
+                   ["_:B", "owl:annotatedSource", "obo:BFO_0000020"],
+                   ["_:B", "rdf:type", "owl:Axiom"],
+                   ["_:B1", "owl:members", "_:B2"],
+                   ["_:B1", "rdf:type", "owl:AllDisjointClasses"],
+                   ["_:B2", "rdf:rest", "_:B3"],
+                   ["_:B2", "rdf:first", "obo:BFO_0000142"],
+                   ["_:B3", "rdf:rest", "_:B4"],
+                   ["_:B3", "rdf:first", "obo:BFO_0000146"],
+                   ["_:B4", "rdf:rest", "rdf:nil"],
+                   ["_:B4", "rdf:first", "obo:BFO_0000147"]])
+
+    ;ann = Annotation( Annotation( Annotation ( r:hasRole r:Curator ) a:author a:Seth_MacFarlane ) rdfs:label "Peter Griffin" )
+    ;TANN(ann, a:Peter)
+  (def recursive_annotation [ 
+                              ["a:Peter" "rdfs:label", "Peter Griffin"],
+                              ["_:x", "rdf:type", "owl:Annotation"],
+                              ["_:x", "owl:annotatedSource", "a:Peter"],
+                              ["_:x", "owl:annotatedProperty", "rdfs:label"],
+                              ["_:x", "owl:annotatedTarget", "Peter Griffin"],
+                              ["_:x", "a:author", "a:Seth_MacFarlane"],
+                              ["_:x", "a:createdAt", "18.02.2021"],
+                              ["_:y", "rdf:type", "owl:Annotation"],
+                              ["_:y", "owl:annotatedSource", "_:x"],
+                              ["_:y", "owl:annotatedProperty", "a:author"],
+                              ["_:y", "owl:annotatedTarget", "a:Seth_MacFarlane"],
+                              ["_:y", "r:hasRole", "r:Curator"]])
+(def recursive_annotation-2 [ 
+                              ["a:Peter" "rdfs:label", "Peter Griffin"],
+                              ["_:x", "rdf:type", "owl:Annotation"],
+                              ["_:x", "owl:annotatedSource", "a:Peter"],
+                              ["_:x", "owl:annotatedProperty", "rdfs:label"],
+                              ["_:x", "owl:annotatedTarget", "Peter Griffin"],
+                              ["_:x", "a:author", "a:Seth_MacFarlane"],
+                              ["_:x", "a:createdAt", "18.02.2021"],
+                              ["_:y", "rdf:type", "owl:Annotation"],
+                              ["_:y", "owl:annotatedSource", "_:x"],
+                              ["_:y", "owl:annotatedProperty", "a:author"],
+                              ["_:y", "owl:annotatedTarget", "a:Seth_MacFarlane"],
+                              ["_:y", "r:hasRole", "r:Curator"], 
+                              ["_:z", "rdf:type", "owl:Annotation"],
+                              ["_:z", "owl:annotatedSource", "_:y"],
+                              ["_:z", "owl:annotatedProperty", "r:hasRole"],
+                              ["_:z", "owl:annotatedTarget", "r:Curator"],
+                              ["_:z", "r:assingedBy", "r:Chris"] 
+                              ])
+
+  (println (thin-2-thick recursive_annotation))
+
+  ;(def s2t (map-subject-2-thin-triples t))
+  ;(run! println (map cs/generate-string (thin-2-thick annotation)))
+  ;(println (thin-2-thick disjointClasses))
   (println "")
   (println (thin-2-thick annotation))
   (println "")
+  (println (post/encode-raw-annotation-map-base (:object (second (thin-2-thick annotation)))))
+  (println "")
+  (println (sort-json (cs/parse-string (cs/generate-string (post/encode-raw-annotation-map (:object (second (thin-2-thick recursive_annotation))))))))
+  (println "")
+  (println (sort-json (cs/parse-string (cs/generate-string (post/encode-raw-annotation-map (:object (second (thin-2-thick recursive_annotation-2))))))))
+  ;(println (post/encode-raw-annotation-map 
+  ;(println "")
+  ;(println (thin-2-thick merged))
 
-  (println (post/get-annotations-for-assertions (thin-2-thick annotation)))
 
   (println (str "wiring:" (gensym)))
 
