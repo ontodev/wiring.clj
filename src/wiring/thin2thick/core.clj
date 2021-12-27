@@ -3,7 +3,7 @@
             [clojure.java.io :as io]
             [clojure.set :as s]
             [clojure.string :as string]
-            [wiring.thin2thick.annotation-handling :as post]
+            [wiring.thin2thick.annotation-handling :as ann]
             [cheshire.core :as cs])
   (:gen-class))
 
@@ -22,7 +22,8 @@
 (defn is-rdf-type?
   [string]
   (or (= string "rdf:type")
-      (= string "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>")))
+      (= string "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>")
+      (= string "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")))
 
 (declare node-2-thick-map)
 
@@ -114,13 +115,14 @@
       (coll? m) (into [] (map cs/parse-string (sort (map #(cs/generate-string (sort-json %)) m))))
       :else m))
 
-(defn thin-2-thick
+;this gives me a raw representation
+(defn thin-2-thick-raw
   ([triples]
    """Given a set of thin triples, return the corresponding set of thick triples."""
    (let [encoded-triples (encode-blank-nodes triples)
          s2t (map-subject-2-thin-triples encoded-triples)
          root (root-triples encoded-triples)
-         thick (map #(thin-2-thick % s2t) root)
+         thick (map #(thin-2-thick-raw % s2t) root)
          sorted (map sort-json thick)]
      sorted))
   ([triple subject-2-thin-triples]
@@ -134,22 +136,20 @@
         object (node-2-thick-map o subject-2-thin-triples)]
     {:subject subject, :predicate predicate, :object object}))) 
 
-;TODO compare maps so that they can be ordered
-;note to self: you need this because you want to order thick triples
-;so that you can match triples to their annotations quickly 
-;(defn com
-;  [m1 m2]
-;  (let [s1 (:subject m1)
-;        s2 (:subject m2)
-;        p1 (:predicate m1)
-;        p2 (:predicate m2) 
-;        o1 (:predicate m1)
-;        o2 (:predicate m2)
-;        s-comp (compare s1 s2)
-;        p-comp (compare p1 p2)
-;        o-comp (compare o1 o2)]
-;    (cond 
-;      (not (= (compare s1 s2)
+
+;TODO: we are currently sorting two times:
+;once in thin-2-thick-raw
+;and once here
+(defn thin-2-thick
+  [triples]
+  (let [raw-thick-triples (thin-2-thick-raw triples)
+        thick-triples (map #(if (or (= (:predicate %) "owl:Annotation")
+                                    (= (:predicate %) "owl:Axiom"))
+                              (ann/encode-raw-annotation-map (:object %)) 
+                              %) raw-thick-triples)
+        sorted (map sort-json thick-triples)
+        normalised (map #(cs/parse-string (cs/generate-string %)) sorted)];TODO: stringify keys - this is a (probably an inefficient?) workaround 
+    normalised))
 
 (defn -main
   "Currently only used for manual testing."
@@ -225,11 +225,13 @@
                               ["_:x", "owl:annotatedTarget", "Peter Griffin"],
                               ["_:x", "a:author", "a:Seth_MacFarlane"],
                               ["_:x", "a:createdAt", "18.02.2021"],
+
                               ["_:y", "rdf:type", "owl:Annotation"],
                               ["_:y", "owl:annotatedSource", "_:x"],
                               ["_:y", "owl:annotatedProperty", "a:author"],
                               ["_:y", "owl:annotatedTarget", "a:Seth_MacFarlane"],
                               ["_:y", "r:hasRole", "r:Curator"], 
+
                               ["_:z", "rdf:type", "owl:Annotation"],
                               ["_:z", "owl:annotatedSource", "_:y"],
                               ["_:z", "owl:annotatedProperty", "r:hasRole"],
@@ -237,29 +239,39 @@
                               ["_:z", "r:assingedBy", "r:Chris"] 
                               ])
 
-  (println (thin-2-thick recursive_annotation))
-
   ;(def s2t (map-subject-2-thin-triples t))
-  ;(run! println (map cs/generate-string (thin-2-thick annotation)))
-  ;(println (thin-2-thick disjointClasses))
-  (println "")
-  (println (thin-2-thick annotation))
-  (println "")
-  (println (post/encode-raw-annotation-map-base (:object (second (thin-2-thick annotation)))))
-  (println "")
-  (println (sort-json (cs/parse-string (cs/generate-string (post/encode-raw-annotation-map (:object (second (thin-2-thick recursive_annotation))))))))
-  (println "")
-  (println (sort-json (cs/parse-string (cs/generate-string (post/encode-raw-annotation-map (:object (second (thin-2-thick recursive_annotation-2))))))))
-  ;(println (post/encode-raw-annotation-map 
+  ;(run! println (map cs/generate-string (thin-2-thick-raw annotation)))
+  ;(println (thin-2-thick-raw disjointClasses))
+  ;(println (ann/encode-raw-annotation-map-base (:object (second (thin-2-thick-raw annotation)))))
   ;(println "")
-  ;(println (thin-2-thick merged))
+  (println "")
+  (println (thin-2-thick-raw recursive_annotation-2)) ;gets raw thick triple
+  (println "")
+  (println (thin-2-thick recursive_annotation-2)) ;gets raw thick triple
+  (println "")
+  ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation-2))))))))
+  ;(println (ann/encode-raw-annotation-map 
+  ;(println "")
+  ;(println (thin-2-thick-raw merged))
 
-
+  (println (assoc {"b" 1} :c 2))
+  (println (update {:asd {:b 1}} :asd #(assoc % "c" 2))) 
   (println (str "wiring:" (gensym)))
 
-  ;(run! println (map cs/generate-string (thin-2-thick disjointClasses)))
-  ;(run! println (map cs/generate-string (thin-2-thick t)))
-  ;(run! println (map #(thin-2-thick % s2t) (root-triples t)))
+  (println "")
+  (println "")
+  ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw annotation))) {})))))
+  (println (contains? (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation))))))) "annotation"))
+  ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation))) {})))))
+
+
+
+
+
+
+  ;(run! println (map cs/generate-string (thin-2-thick-raw disjointClasses)))
+  ;(run! println (map cs/generate-string (thin-2-thick-raw t)))
+  ;(run! println (map #(thin-2-thick-raw % s2t) (root-triples t)))
   ;(def ii (node-2-thick-map "_:B" s2t))
   ;(println ii)
 
