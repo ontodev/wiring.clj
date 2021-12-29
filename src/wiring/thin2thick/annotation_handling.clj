@@ -34,26 +34,22 @@
   [annotation-map previous-annotation]
   (let [annotated-property (get previous-annotation "owl:annotatedProperty")
         annotated-object (get previous-annotation "owl:annotatedTarget")]
-    (update annotation-map annotated-property #(map 
-                                                 (fn [x] 
-                                                   (if (= (:value x) annotated-object)
-                                                     (assoc x :annotation (:annotation previous-annotation))
-                                                     x)) 
-                                                %)))) 
+    (update annotation-map annotated-property #(into [] (map 
+                                                          (fn [x] 
+                                                            (if (= (:object x) annotated-object)
+                                                              (assoc x :annotation (:annotation previous-annotation))
+                                                              x)) 
+                                                          %))))) 
 
 (defn encode-raw-annotation-map-base
   [predicate-map previous-annotation]
-  (let [subject (get (first (get predicate-map "owl:annotatedSource")) "object")
-        predicate (get (first (get predicate-map "owl:annotatedProperty")) "object")
-        object (get (first (get predicate-map "owl:annotatedTarget")) "object") 
+  (let [subject (:object (first (get predicate-map "owl:annotatedSource")))
+        predicate (:object (first (get predicate-map "owl:annotatedProperty")))
+        object (:object (first (get predicate-map "owl:annotatedTarget"))) 
 
         annotation-properties (filter #(not (is-owl-property? %)) (keys predicate-map))
         annotation-objects (map #(get predicate-map %) annotation-properties) 
-        annotation-values (map
-                            #(map (fn [x] {:value (get x "object")}) %) 
-                            annotation-objects)
-        annotation-values (map #(into [] %) annotation-values) 
-        annotation-map (zipmap annotation-properties annotation-values)] 
+        annotation-map (zipmap annotation-properties annotation-objects)] 
 
     (if (not-empty previous-annotation)
       {:object object,
@@ -69,17 +65,13 @@
 
 (defn encode-raw-annotation-map-recursion
   [predicate-map previous-annotation]
-  (let [subject (get (first (get predicate-map "owl:annotatedSource")) "object")
-        predicate (get (first (get predicate-map "owl:annotatedProperty")) "object")
-        object (get (first (get predicate-map "owl:annotatedTarget")) "object")
+  (let [subject (:object (first (get predicate-map "owl:annotatedSource")))
+        predicate (:object (first (get predicate-map "owl:annotatedProperty")))
+        object (:object (first (get predicate-map "owl:annotatedTarget")))
 
         annotation-properties (filter #(not (is-owl-property? %)) (keys predicate-map))
         annotation-objects (map #(get predicate-map %) annotation-properties) 
-        annotation-values (map
-                            #(map (fn [x] {:value (get x "object")}) %) 
-                            annotation-objects) 
-        annotation-values (map #(into [] %) annotation-values)
-        annotation-map (zipmap annotation-properties annotation-values)
+        annotation-map (zipmap annotation-properties annotation-objects)
         updated-annotation (update-annotation-map annotation-map previous-annotation)] 
 
     (if (empty? previous-annotation)
@@ -97,19 +89,18 @@
   ([predicate-map]
    (encode-raw-annotation-map predicate-map {}))
   ([predicate-map previous-annotation]
-  (let [subject (get (first (get predicate-map "owl:annotatedSource")) "object")]
+  (let [subject (:object (first (get predicate-map "owl:annotatedSource")))]
     (if (map? subject) 
       (encode-raw-annotation-map-recursion predicate-map previous-annotation)
       (encode-raw-annotation-map-base predicate-map previous-annotation)))))
 
 
-;TODO: :object and (get coll object) should be used consistently
 (defn get-annotated-triple
   [annotation]
   (let [predicate-map (:object annotation)
-        subject (get (first (get predicate-map "owl:annotatedSource")) "object")
-        predicate (get (first (get predicate-map "owl:annotatedProperty")) "object")
-        object (get (first (get predicate-map "owl:annotatedTarget")) "object")]
+        subject (:object (first (get predicate-map "owl:annotatedSource")))
+        predicate (:object (first (get predicate-map "owl:annotatedProperty")))
+        object (:object (first (get predicate-map "owl:annotatedTarget")))]
     {:object object, :predicate predicate, :subject subject})) 
 
 (defn get-annotations-for-assertions
