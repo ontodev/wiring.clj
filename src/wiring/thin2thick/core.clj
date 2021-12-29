@@ -25,6 +25,30 @@
       (= string "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>");TODO this will be unnecessary
       (= string "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")))
 
+;(defn is-rdf-literal?
+;  [string]
+;  (when (string? string)
+;    (or (re-matches #"^\".*\"$" string) 
+;        (re-matches #"^\"(.*)\"@(.*)$" string)
+;        (re-matches #"^\"(.*)\"\^\^(.*)$" string))))
+
+(defn is-rdf-literal?
+  [string]
+  (when (string? string)
+    (re-matches #"^\".*\".*$" string))) 
+
+;NB: this probably won't be used
+(defn get-literal-string
+  [string]
+ (second (re-matches #"^\"(.*)\".*$" string)))
+
+(defn has-language-tag?
+  [literal]
+  (re-matches #"^\"(.*)\"@(.*)$" literal))
+
+(defn has-datatype?
+  [literal]
+  (re-matches #"^\"(.*)\"\^\^(.*)$" literal))
 
 
 (declare node-2-thick-map)
@@ -265,6 +289,15 @@
   (println (contains? (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation))))))) "annotation"))
 
 
+  ;(let [lit? (is-rdf-literal? "\"asd\"@en")]
+  ;  (when lit? 
+  ;    (println lit?)))
+  (println (is-rdf-literal? {:a 1}))
+  (println (is-rdf-literal? "\"asdd\""))
+  (println (get-literal-string "\"asdd\"@en"))
+  ;(println (is-rdf-literal? "\"asdd\"@en"))
+  ;(println (is-rdf-literal? "\"asdd\"^^string"))
+  ;(println (has-language-tag? "\"asdd\"@en"))
 
   ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation))) {})))))
 
