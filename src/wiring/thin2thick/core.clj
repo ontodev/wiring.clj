@@ -37,18 +37,21 @@
   (when (string? string)
     (re-matches #"^\".*\".*$" string))) 
 
-;NB: this probably won't be used
+;NB: quotation marks will be part of the string representation 
+;so (get-literal-string "\"example\""@en) will return
+;"\"example\"" and not "example"
+;this is done to preserve type information
 (defn get-literal-string
   [string]
- (second (re-matches #"^\"(.*)\".*$" string)))
+ (second (re-matches #"^(\".*\").*$" string)))
 
 (defn has-language-tag?
   [literal]
-  (re-matches #"^\"(.*)\"@(.*)$" literal))
+  (re-matches #"^\"(.*)\"(@.*)$" literal))
 
 (defn has-datatype?
   [literal]
-  (re-matches #"^\"(.*)\"\^\^(.*)$" literal))
+  (re-matches #"^\"(.*)\"(\^\^.*)$" literal))
 
 
 (declare node-2-thick-map)
@@ -163,6 +166,48 @@
     {:subject subject, :predicate predicate, :object object}))) 
 
 
+;TODO document and explain handling of datatypes/language tags 
+(declare encode-literals)
+
+(defn encode-literal
+  [thick-triple] 
+  (let [object (:object thick-triple)
+        literal-value (get-literal-string object)
+        language-tag (has-language-tag? object)
+        datatype (has-datatype? object)
+        has-thick-datatype (or language-tag datatype)]
+    (if has-thick-datatype
+      (assoc thick-triple :object literal-value
+             :datatype (nth has-thick-datatype 2))
+      thick-triple)))
+
+(defn handle-object
+  [thick-triple]
+    (let [object (:object thick-triple)]
+      (cond (is-rdf-literal? object) (encode-literal thick-triple) 
+            (map? object) (update thick-triple :object encode-literals)
+            (coll? object) (update thick-triple :object #(map encode-literals %))
+            :else thick-triple)))
+
+;NB thick-triple has to be passed around instead of (:object thick-triple)
+;because we need to modify the map 'thick-triple' and not just (:object thick-triple)
+(defn encode-literals
+  [thick-triple]
+  (if (map? thick-triple)
+    (let [object-handled (handle-object thick-triple)
+          rest-handled (map-on-hash-map-vals #(cond
+                                                (map? %) (encode-literals %)
+                                                (coll? %) (into [] (map encode-literals %))
+                                                :else %)
+                                             (dissoc thick-triple :object))]
+      (if (:object object-handled)
+        (let [encoding (assoc rest-handled :object (:object object-handled))]
+          (if (contains? object-handled :datatype)
+            (assoc encoding :datatype (:datatype object-handled))
+            encoding))
+        rest-handled))
+    thick-triple)) 
+
 (defn thin-2-thick
   [triples]
   (let [raw-thick-triples (thin-2-thick-raw triples)
@@ -170,9 +215,10 @@
                                     (= (:predicate %) "owl:Axiom"))
                               (ann/encode-raw-annotation-map (:object %)) 
                               %) raw-thick-triples)
+        thick-triples (map encode-literals thick-triples)
         sorted (map sort-json thick-triples)
         normalised (map #(cs/parse-string (cs/generate-string %)) sorted)];TODO: stringify keys - this is a (probably an inefficient?) workaround 
-    thick-triples))
+    normalised))
 
 (defn -main
   "Currently only used for manual testing."
@@ -259,7 +305,7 @@
                               ["_:z", "owl:annotatedSource", "_:y"],
                               ["_:z", "owl:annotatedProperty", "r:hasRole"],
                               ["_:z", "owl:annotatedTarget", "r:Curator"],
-                              ["_:z", "r:assingedBy", "r:Chris"] 
+                              ["_:z", "r:assingedBy", "\"r:Chris\"@en"] 
                               ])
 
   ;(def s2t (map-subject-2-thin-triples t))
@@ -279,42 +325,16 @@
   ;(println "")
   ;(println (thin-2-thick-raw merged))
 
-  (println (assoc {"b" 1} :c 2))
-  (println (update {:asd {:b 1}} :asd #(assoc % "c" 2))) 
   (println (str "wiring:" (gensym)))
 
-  (println "")
-  (println "")
   ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw annotation))) {})))))
-  (println (contains? (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation))))))) "annotation"))
+  ;(println (contains? (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation))))))) "annotation"))
 
-
-  ;(let [lit? (is-rdf-literal? "\"asd\"@en")]
-  ;  (when lit? 
-  ;    (println lit?)))
-  (println (is-rdf-literal? {:a 1}))
-  (println (is-rdf-literal? "\"asdd\""))
-  (println (get-literal-string "\"asdd\"@en"))
-  ;(println (is-rdf-literal? "\"asdd\"@en"))
-  ;(println (is-rdf-literal? "\"asdd\"^^string"))
-  ;(println (has-language-tag? "\"asdd\"@en"))
 
   ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation))) {})))))
+;(println (encode-literals {:subject {:object "\"ad\"^^string"} :predicate "o" :object "\"dd\"@en"}))
 
-
-
-
-
-
-  ;(run! println (map cs/generate-string (thin-2-thick-raw disjointClasses)))
-  ;(run! println (map cs/generate-string (thin-2-thick-raw t)))
-  ;(run! println (map #(thin-2-thick-raw % s2t) (root-triples t)))
-  ;(def ii (node-2-thick-map "_:B" s2t))
-  ;(println ii)
-
-  ;(println (cs/generate-string (sort-json ii)))
-  ;(println (cs/generate-string (into (sorted-map) ii)))
-  ;(println (cs/generate-string ii)) 
-  )
+  ;(println (map encode-literals (thin-2-thick recursive_annotation-2))) ;gets raw thick triple
+)
 
 
