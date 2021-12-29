@@ -22,13 +22,16 @@
 (defn is-rdf-type?
   [string]
   (or (= string "rdf:type")
-      (= string "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>")
+      (= string "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>");TODO this will be unnecessary
       (= string "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")))
+
+
 
 (declare node-2-thick-map)
 
 (defn map-on-hash-map-vals [f m]
     (zipmap (keys m) (map f (vals m)))) 
+
 
 (defn triples-2-object
   [triples subject-2-thin-triples]
@@ -43,11 +46,6 @@
       (= number-of-types 1) (nth (first typing-triples) 2)
       :else "ambiguous")))
 
-;This works okay for
-;-rdf:type owl:AllDisjointClasses
-;-rdf:type owl:AllDisjointProperties .
-;-rdf:type owl:AllDifferent
-;-rdf:type owl:NegativePropertyAssertion ;
 (defn encode-blank-nodes
   [triples]
   """Given a set of triples,
@@ -70,6 +68,11 @@
     the following triple would be added:
 
        [wiring:blanknode:1, rdf:type, _:B] 
+
+    Explanation:
+    We collapse blank nodes into JSON maps.
+    However, for root blank nodes, this yields a JSON map that is not part of a triple.
+    So, we artificially create these triples by introducing 'dummy blank nodes' (that are not treated as blank nodes by the implementation).
     """
   (let [subject-to-triples (group-by first triples)
         subjects (set (map first triples))
@@ -84,6 +87,7 @@
 
 
 ;TODO: would this work for a "root blank node"? (no - all blank nodes get replaced with a predicate map)
+;TODO: check here whether node is an rdf literal and encode it properly
 (defn node-2-thick-map
   [node subject-2-thin-triples]
   """Given a node, i.e., a subject and a map from subjects to triples,
@@ -91,8 +95,8 @@
   (if (is-blank-node? node)
     (let [triples (get subject-2-thin-triples node)
           predicates (group-by second triples)]; create predicate map 
-      (map-on-hash-map-vals #(triples-2-object % subject-2-thin-triples) predicates)) ;recurse on all predicate maps
-    node))
+      (map-on-hash-map-vals #(triples-2-object % subject-2-thin-triples) predicates)) ;recurse on all predicate maps 
+    node)) 
 
 (defn root-triples
   [triples]
@@ -106,7 +110,7 @@
         root-triples (filter #(contains? root (first %)) triples)]
     root-triples))
 
-
+;NB: sorting transfoms keywords to strings 
 (defn sort-json
   [m]
   """Given a JSON value, return a lexicographically ordered representation"""
@@ -115,19 +119,17 @@
       (coll? m) (into [] (map cs/parse-string (sort (map #(cs/generate-string (sort-json %)) m))))
       :else m))
 
-;this gives me a raw representation
 (defn thin-2-thick-raw
   ([triples]
-   """Given a set of thin triples, return the corresponding set of thick triples."""
-   (let [encoded-triples (encode-blank-nodes triples)
-         s2t (map-subject-2-thin-triples encoded-triples)
-         root (root-triples encoded-triples)
-         thick (map #(thin-2-thick-raw % s2t) root)
-         sorted (map sort-json thick)]
-     sorted))
+   """Given a set of thin triples, return the corresponding set of (raw) thick triples."""
+   (let [blank-node-encoding (encode-blank-nodes triples)
+         s2t (map-subject-2-thin-triples blank-node-encoding)
+         root (root-triples blank-node-encoding)
+         thick (map #(thin-2-thick-raw % s2t) root)]
+     thick))
   ([triple subject-2-thin-triples]
   """Given a thin triple t and a map from subjects to thin triples,
-    return t as a thick triple."""
+    return t as a (raw) thick triple."""
   (let [s (first triple)
         p (second triple)
         o (nth triple 2) 
@@ -137,9 +139,6 @@
     {:subject subject, :predicate predicate, :object object}))) 
 
 
-;TODO: we are currently sorting two times:
-;once in thin-2-thick-raw
-;and once here
 (defn thin-2-thick
   [triples]
   (let [raw-thick-triples (thin-2-thick-raw triples)
@@ -149,7 +148,7 @@
                               %) raw-thick-triples)
         sorted (map sort-json thick-triples)
         normalised (map #(cs/parse-string (cs/generate-string %)) sorted)];TODO: stringify keys - this is a (probably an inefficient?) workaround 
-    normalised))
+    thick-triples))
 
 (defn -main
   "Currently only used for manual testing."
@@ -171,9 +170,9 @@
   ;introduce dummy ;blank nodes;
  ;dont't translate root blank nodes?
   (def annotation [;["wiring:blanknode", "owl:AxiomAnnotatino", "_:B"],
-                   ["obo:BFO_0000020", "obo:IAO_0000602", "asd"],
+                   ["obo:BFO_0000020", "obo:IAO_0000602", "\"asd\""],
                    ["_:B", "obo:IAO_0010000", "obo:050-003"],
-                   ["_:B", "owl:annotatedTarget", "asd"],
+                   ["_:B", "owl:annotatedTarget", "\"asd\""],
                    ["_:B", "owl:annotatedProperty", "obo:IAO_0000602"],
                    ["_:B", "owl:annotatedSource", "obo:BFO_0000020"],
                    ["_:B", "rdf:type", "owl:Axiom"]])
@@ -249,6 +248,8 @@
   (println "")
   (println (thin-2-thick recursive_annotation-2)) ;gets raw thick triple
   (println "")
+  (println (thin-2-thick annotation)) ;gets raw thick triple
+  (println "")
   ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation-2))))))))
   ;(println (ann/encode-raw-annotation-map 
   ;(println "")
@@ -262,6 +263,9 @@
   (println "")
   ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw annotation))) {})))))
   (println (contains? (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation))))))) "annotation"))
+
+
+
   ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation))) {})))))
 
 
