@@ -49,6 +49,7 @@
 
         annotation-properties (filter #(not (is-owl-property? %)) (keys predicate-map))
         annotation-objects (map #(get predicate-map %) annotation-properties) 
+        annotation-objects (map #(map (fn [x] (assoc x :meta "owl:Annotation")) %) annotation-objects) 
         annotation-map (zipmap annotation-properties annotation-objects)] 
 
     (if (not-empty previous-annotation)
@@ -59,7 +60,7 @@
       {:object object,
        :predicate predicate,
        :subject subject,
-       :annotation annotation-map})))
+       :annotation annotation-map}))) 
 
 (declare encode-raw-annotation-map)
 
@@ -71,6 +72,7 @@
 
         annotation-properties (filter #(not (is-owl-property? %)) (keys predicate-map))
         annotation-objects (map #(get predicate-map %) annotation-properties) 
+        annotation-objects (map #(map (fn [x] (assoc x :meta "owl:Annotation")) %) annotation-objects) 
         annotation-map (zipmap annotation-properties annotation-objects)
         updated-annotation (update-annotation-map annotation-map previous-annotation)] 
 
@@ -85,10 +87,36 @@
       )))
 
 
+;TODO: RDF reification
 (defn encode-raw-annotation-map
   ([predicate-map]
+   """Given a raw predicate map,
+     test whether it encodes an OWL annotation.
+     If so, transform it into a thick triple.
+
+     Example:
+
+     The raw thick triple 
+
+     {:subject wiring:blanknode:G__1130,
+      :predicate owl:Axiom,
+      :object {obo:IAO_0010000 [{:object obo:050-003}],
+               owl:annotatedTarget [{:object \"literal\"}],
+               owl:annotatedProperty [{:object obo:IAO_0000602}],
+               owl:annotatedSource [{:object obo:BFO_0000020}],
+               rdf:type [{:object owl:Axiom}]}}
+
+      is transformed into the thick triple
+
+      {subject obo:BFO_0000020}
+       predicate obo:IAO_0000602,
+       object \"literal\",
+       annotation {obo:IAO_0010000 [{object obo:050-003}]}, 
+     """
    (encode-raw-annotation-map predicate-map {}))
   ([predicate-map previous-annotation]
+   """Given a predicate map, recursively translate raw thick triple annotations
+     as described above."""
   (let [subject (:object (first (get predicate-map "owl:annotatedSource")))]
     (if (map? subject) 
       (encode-raw-annotation-map-recursion predicate-map previous-annotation)
