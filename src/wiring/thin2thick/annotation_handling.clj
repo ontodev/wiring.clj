@@ -86,17 +86,58 @@
                                   "owl:annotatedTarget" object})
       )))
 
+(defn encode-raw-reification-map-base
+  [predicate-map previous-annotation]
+  (let [subject (:object (first (get predicate-map "rdf:subject")))
+        predicate (:object (first (get predicate-map "rdf:predicate")))
+        object (:object (first (get predicate-map "rdf:object"))) 
 
-;TODO: RDF reification
+        annotation-properties (filter #(not (is-owl-property? %)) (keys predicate-map))
+        annotation-objects (map #(get predicate-map %) annotation-properties) 
+        annotation-objects (map #(map (fn [x] (assoc x :meta "rdf:Reification")) %) annotation-objects) 
+        annotation-map (zipmap annotation-properties annotation-objects)] 
+
+    (if (not-empty previous-annotation)
+      {:object object,
+       :predicate predicate,
+       :subject subject,
+       :annotation (update-annotation-map annotation-map previous-annotation)} 
+      {:object object,
+       :predicate predicate,
+       :subject subject,
+       :annotation annotation-map})))
+
+(defn encode-raw-reification-map-recursion
+  [predicate-map previous-annotation]
+  (let [subject (:object (first (get predicate-map "rdf:subject")))
+        predicate (:object (first (get predicate-map "rdf:predicate")))
+        object (:object (first (get predicate-map "rdf:object")))
+
+        annotation-properties (filter #(not (is-owl-property? %)) (keys predicate-map))
+        annotation-objects (map #(get predicate-map %) annotation-properties) 
+        annotation-objects (map #(map (fn [x] (assoc x :meta "rdf:Reification")) %) annotation-objects) 
+        annotation-map (zipmap annotation-properties annotation-objects)
+        updated-annotation (update-annotation-map annotation-map previous-annotation)] 
+
+    (if (empty? previous-annotation)
+      (encode-raw-annotation-map subject {:annotation annotation-map
+                                          "rdf:predicate" predicate
+                                          "rdf:object" object}) 
+      (encode-raw-annotation-map subject
+                                 {:annotation updated-annotation
+                                  "rdf:predicate" predicate
+                                  "rdf:object" object})
+      )))
+
 (defn encode-raw-annotation-map
   ([predicate-map]
    """Given a raw predicate map,
-     test whether it encodes an OWL annotation.
+     test whether it encodes an OWL annotation or RDF reification.
      If so, transform it into a thick triple.
 
      Example:
 
-     The raw thick triple 
+     The raw thick triple of an OWL annotation
 
      {:subject wiring:blanknode:G__1130,
       :predicate owl:Axiom,
@@ -108,20 +149,24 @@
 
       is transformed into the thick triple
 
-      {subject obo:BFO_0000020}
+      {subject obo:BFO_0000020,
        predicate obo:IAO_0000602,
        object \"literal\",
-       annotation {obo:IAO_0010000 [{object obo:050-003}]}, 
+       annotation {obo:IAO_0010000 [{object obo:050-003}]}} 
      """
    (encode-raw-annotation-map predicate-map {}))
   ([predicate-map previous-annotation]
    """Given a predicate map, recursively translate raw thick triple annotations
      as described above."""
-  (let [subject (:object (first (get predicate-map "owl:annotatedSource")))]
-    (if (map? subject) 
-      (encode-raw-annotation-map-recursion predicate-map previous-annotation)
-      (encode-raw-annotation-map-base predicate-map previous-annotation)))))
-
+  (let [owl-annototation (:object (first (get predicate-map "owl:annotatedSource")))
+        rdf-reification (:object (first (get predicate-map "rdf:subject")))]
+    (cond owl-annototation (if (map? owl-annototation) 
+                             (encode-raw-annotation-map-recursion predicate-map previous-annotation)
+                             (encode-raw-annotation-map-base predicate-map previous-annotation))
+          rdf-reification (if (map? rdf-reification)
+                            (encode-raw-reification-map-recursion predicate-map previous-annotation)
+                            (encode-raw-reification-map-base predicate-map previous-annotation))
+                            )))) 
 
 (defn get-annotated-triple
   [annotation]

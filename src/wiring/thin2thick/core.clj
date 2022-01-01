@@ -231,8 +231,10 @@
 (defn thin-2-thick
   [triples]
   (let [raw-thick-triples (thin-2-thick-raw triples)
+        ;TODO RDF reification (= (:predicate %) "rdf:statement")
         thick-triples (map #(if (or (= (:predicate %) "owl:Annotation")
-                                    (= (:predicate %) "owl:Axiom"))
+                                    (= (:predicate %) "owl:Axiom")
+                                    (= (:predicate %) "rdf:Statement"))
                               (ann/encode-raw-annotation-map (:object %)) 
                               %) raw-thick-triples)
         thick-triples (map encode-literals thick-triples)
@@ -327,12 +329,22 @@
                               ["_:z", "owl:annotatedTarget", "r:Curator"],
                               ["_:z", "r:assingedBy", "\"r:Chris\"@en"] 
                               ])
+(def reification [;["wiring:blanknode", "owl:AxiomAnnotatino", "_:B"], 
+                   ["_:B", "obo:IAO_0010000", "obo:050-003"],
+                   ["_:B", "rdf:object", "\"asd\""],
+                   ["_:B", "rdf:predicate", "obo:IAO_0000602"],
+                   ["_:B", "rdf:subject", "obo:BFO_0000020"],
+                   ["_:B", "rdf:type", "rdf:Statement"]])
 
   (println (thin-2-thick-raw recursive_annotation-2)) ;gets raw thick triple
   (println "")
   (println (thin-2-thick recursive_annotation-2)) ;gets raw thick triple
   (println "")
+  (println (thin-2-thick-raw annotation)) ;gets raw thick triple
+  (println "")
   (println (thin-2-thick annotation)) ;gets raw thick triple
+  (println "")
+  (println (thin-2-thick reification)) ;gets raw thick triple
   (println "")
   ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation-2)))))))) 
 )
