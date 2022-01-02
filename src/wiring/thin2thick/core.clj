@@ -183,7 +183,7 @@
     (if has-thick-datatype
       (assoc predicate-map :object literal-value
              :datatype (nth has-thick-datatype 2))
-      predicate-map)))
+      (assoc predicate-map :datatype "_plain"))))
 
 (defn handle-object
   "Given a predicate map, update its JSON structure by
