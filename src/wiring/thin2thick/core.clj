@@ -228,19 +228,43 @@
         rest-handled))
     thick-triple)) 
 
+(defn encode-json-objects
+  "Given a predicate map m, associate :objects with _json datatypes"
+  [m]
+    (cond
+      (map? (:object m)) (map-on-hash-map-vals encode-json-objects (assoc m :datatype "_json")) 
+      (map? m) (map-on-hash-map-vals encode-json-objects m) 
+      (coll? m) (map encode-json-objects m) 
+      :else m))
+
+;TODO: identify IRIs properly, i.e. via prefixes?
+(defn encode-iris
+  "Given a predicate map m, associate :objects with _iri datatypes"
+  [m]
+    (cond
+      (and
+        (map? m)
+        (contains? m :object)
+        (not (contains? m :datatype))) (map-on-hash-map-vals encode-iris (assoc m :datatype "_iri")) 
+      (map? m) (map-on-hash-map-vals encode-iris m) 
+      (coll? m) (map encode-iris m) 
+      :else m))
+
 (defn thin-2-thick
   [triples]
   (let [raw-thick-triples (thin-2-thick-raw triples)
-        ;TODO RDF reification (= (:predicate %) "rdf:statement")
-        thick-triples (map #(if (or (= (:predicate %) "owl:Annotation")
+        annotations (map #(if (or (= (:predicate %) "owl:Annotation")
                                     (= (:predicate %) "owl:Axiom")
                                     (= (:predicate %) "rdf:Statement"))
                               (ann/encode-raw-annotation-map (:object %)) 
                               %) raw-thick-triples)
-        thick-triples (map encode-literals thick-triples)
-        sorted (map sort-json thick-triples)
+        literals (map encode-literals annotations)
+        json-maps (map encode-json-objects literals)
+        iris (map encode-iris json-maps)
+        sorted (map sort-json iris)
         normalised (map #(cs/parse-string (cs/generate-string %)) sorted)];TODO: stringify keys - this is a (probably an inefficient?) workaround 
     normalised))
+
 
 (defn -main
   "Currently only used for manual testing."
@@ -338,14 +362,15 @@
 
   (println (thin-2-thick-raw recursive_annotation-2)) ;gets raw thick triple
   (println "")
-  (println (thin-2-thick recursive_annotation-2)) ;gets raw thick triple
+  (println (thin-2-thick recursive_annotation-2)) 
   (println "")
-  (println (thin-2-thick-raw annotation)) ;gets raw thick triple
+  (println (thin-2-thick-raw annotation)) 
   (println "")
-  (println (thin-2-thick annotation)) ;gets raw thick triple
+  (println (thin-2-thick annotation)) 
   (println "")
-  (println (thin-2-thick reification)) ;gets raw thick triple
+  (println (thin-2-thick reification)) 
   (println "")
+  (println (thin-2-thick t)) 
   ;(println (sort-json (cs/parse-string (cs/generate-string (ann/encode-raw-annotation-map (:object (second (thin-2-thick-raw recursive_annotation-2)))))))) 
 )
 
