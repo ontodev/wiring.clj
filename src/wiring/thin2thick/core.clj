@@ -31,7 +31,7 @@
 ;this is done to preserve type information
 (defn get-literal-string
   [string]
- (second (re-matches #"^(\".*\").*$" string)))
+ (second (re-matches #"^\"(.*)\".*$" string)))
 
 (defn has-language-tag?
   [literal]
@@ -183,7 +183,8 @@
     (if has-thick-datatype
       (assoc predicate-map :object literal-value
              :datatype (nth has-thick-datatype 2))
-      (assoc predicate-map :datatype "_plain"))))
+      (assoc predicate-map :object literal-value
+                           :datatype "_plain"))))
 
 (defn handle-object
   "Given a predicate map, update its JSON structure by
@@ -360,12 +361,19 @@
                    ["_:B", "rdf:subject", "obo:BFO_0000020"],
                    ["_:B", "rdf:type", "rdf:Statement"]])
 
+(def existentialBlankNode [
+                           ;["Bob", "ex:knows", "_:B"]
+                           ;["_:B", "ex:livesIn", "\"USA\""],
+                           ["_:B", "ex:worksAs", "\"Lawyer\""]])
+
+  (println (thin-2-thick-raw existentialBlankNode)) ;gets raw thick triple
+  (println "")
   (println (thin-2-thick-raw recursive_annotation-2)) ;gets raw thick triple
   (println "")
   (println (thin-2-thick recursive_annotation-2)) 
   (println "")
-  (println (thin-2-thick-raw annotation)) 
-  (println "")
+  ;(println (thin-2-thick-raw annotation)) 
+  ;(println "")
   (println (thin-2-thick annotation)) 
   (println "")
   (println (thin-2-thick reification)) 
