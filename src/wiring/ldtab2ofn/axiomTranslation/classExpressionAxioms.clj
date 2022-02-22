@@ -36,7 +36,7 @@
   [predicates]
   ;{:pre [(spec/valid? ::owlspec/thickTriple predicates)]}
   ;TODO: here we'd need to adapet thigs already? to deal with this object nesting?
-  (let [arguments (classTranslation/translate (:owl:members (:object predicates)))]
+  (let [arguments (classTranslation/translate (:object (first (:owl:members (:object predicates)))))]
     (vec (cons "DisjointClasses" arguments))))
 
 (defn translateEquivalentClasses
