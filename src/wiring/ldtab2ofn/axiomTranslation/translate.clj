@@ -171,6 +171,7 @@
       "owl:SymmetricProperty" (OPA/translateSymmetricProperty predicateMap) 
       "owl:TransitiveProperty" (OPA/translateTransitiveProperty predicateMap)
       "owl:propertyChainAxiom" (OPA/translatePropertyChainAxiom predicateMap)
+      "owl:equivalentProperty" (OPA/translateEquivalentProperty predicateMap) ;TODO this currently only translates to OFN S-expressions with 2 arguments - but this is an n-ary constructor
 
       ;ambiguous property axioms (for data and object property axioms)
       ;NB: all data property axioms are ambiguous

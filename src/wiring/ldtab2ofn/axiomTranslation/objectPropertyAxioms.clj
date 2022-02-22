@@ -120,6 +120,16 @@
       (vec (cons "DisjointObjectProperties" arguments))
       (vec (cons "DisjointProperties" arguments)))))
 
+(defn translateEquivalentProperty
+  "Translate owl:equivalentProperty"
+  [predicates]
+  (let [lhs (propertyTranslation/translate (:subject predicates))
+        rhs (propertyTranslation/translate (:object predicates))]
+    (if (or (typeInference/is-object-property-expression? lhs)
+            (typeInference/is-object-property-expression? rhs))
+      (vector "EquivalentObjectProperties" lhs rhs)
+      (vector "EquivalentProperties" lhs rhs))))
+
 (defn translateType
   "Translate rdf:type for axioms"
   [predicateMap]
