@@ -80,6 +80,12 @@
       (vec (cons "DisjointObjectProperties" arguments))
       (vec (cons "DisjointProperties" arguments)))))
 
+(defn translateAllDifferent
+  [predicates]
+  (vec (cons "DifferentIndividuals" (CET/translateList (:object (first (:owl:distinctMembers (:object predicates)))))))) ;TODO this is not a class translation
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                    Translation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -172,6 +178,7 @@
       "owl:propertyDisjointWith" (translateDisjointProperties predicateMap)
       "rdfs:domain" (translateDomain predicateMap)
       "rdfs:range" (translateRange predicateMap)
+      "owl:AllDifferent" (translateAllDifferent predicateMap)
 
       ;TODO: individual assertions
       "rdf:type" (translateType predicateMap)
