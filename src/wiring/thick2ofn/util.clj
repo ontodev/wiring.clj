@@ -9,7 +9,8 @@
 
 (defn getNumber [xsd]
   "Extract n from \"n\"^^xsd:nonNegativeInteger."
-  (str "\"" (first (s/split xsd #"\^")) "\""))
+  (first (s/split xsd #"\^")))
+  ;(str "\"" (first (s/split xsd #"\^")) "\""))
 
 (defn ofsFormat
   "Serialises a list of entities into a valid OFN-S expression."
