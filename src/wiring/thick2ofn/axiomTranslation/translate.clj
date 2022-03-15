@@ -96,6 +96,20 @@
       (vector "ThinTriple" subject predicate object)
       (vector "Error" subject predicate object))))
 
+(defn translateIndividualAssertion
+  "Translate class assertion with complex class"
+  [predicateMap]
+  (let [subject (:subject predicateMap)
+        predicate (:predicate predicateMap)
+        object (CET/translate (:object predicateMap))]
+    (vector "ClassAssertion" subject object)))
+
+(defn translateSpecialCases 
+  [predicateMap]
+  (let [object (:object predicateMap)]
+    (if (map? object)
+      (translateIndividualAssertion predicateMap)
+      (translateThinTriples predicateMap)))) 
 
 (defn translateType
   "Translate rdf:type for axioms"
@@ -113,7 +127,9 @@
       "owl:AsymmetricProperty" (OPA/translate predicateMap)
       "owl:SymmetricProperty" (OPA/translate predicateMap)
       "owl:TransitiveProperty" (OPA/translate predicateMap)
-      (translateThinTriples predicateMap)
+      (translateSpecialCases predicateMap)
+      ;(map? ob) (translateIndividualAssertion predicateMap) 
+      ;(translateThinTriples predicateMap)
       )))
 
 (defn translate
@@ -145,6 +161,7 @@
       "rdfs:domain" (translateDomain predicateMap)
       "rdfs:range" (translateRange predicateMap)
 
+      ;TODO: individual assertions
       "rdf:type" (translateType predicateMap)
 
       (translateThinTriples predicateMap)
