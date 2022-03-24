@@ -88,6 +88,7 @@
 ;TODO: there are ways to write lists in RDFa much more succintly.
 ;unfortunately, I couldn't get more succinct notations working in nested epxressions.
 
+;TODO: paranthesis for nested complex expressions?
 (defn translateList
   "Translate class expressions into an RDF list"
   [expressions subject2label htmlMarkup]
@@ -260,7 +261,7 @@
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " exactly " cardinality)
      number (str cardinality "^^xsd:nonNegativeInteger")
-     card [:span {:property "owl:minCardinality"} number] ] 
+     card [:span {:property "owl:cardinality"} number] ] 
      (renderRestriction opening prop modifer card)))
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
@@ -269,7 +270,7 @@
      prop (property/translate property subject2label "owl:onProperty")
      modifer (str " exactly ")
      number (str cardinality "^^xsd:nonNegativeInteger")
-     card [:span {:property "owl:minCardinality"} number] ]
+     card [:span {:property "owl:cardinality"} number] ]
      (renderRestriction opening prop modifer card))))
 
 (defn translateObjectExactQualifiedCardinality 
@@ -281,7 +282,7 @@
      modifer (str " exactly ")
      fill (translate filler subject2label "owl:onClass")
      number (str cardinality "^^xsd:nonNegativeInteger")
-     card [:span {:property "owl:minQualifiedCardinality"} number]] 
+     card [:span {:property "owl:qualifiedCardinality"} number]] 
      (renderRestriction opening prop modifer card fill)))
 
   ([ofn subject2label propertyRDFa] ;parent RDFa property
@@ -291,7 +292,7 @@
      modifer (str " exactly ")
      fill (translate filler subject2label "owl:onClass")
      number (str cardinality "^^xsd:nonNegativeInteger")
-     card [:span {:property "owl:minQualifiedCardinality"} number]] 
+     card [:span {:property "owl:qualifiedCardinality"} number]] 
      (renderRestriction opening prop modifer card fill)))) 
 
 (defn translateObjectExactCardinality
