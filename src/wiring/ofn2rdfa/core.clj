@@ -3,9 +3,9 @@
             [wiring.ofn2rdfa.axiomTranslation :as axiomTranslation]
             [wiring.util.thickTriples :as thickTriples]
             [wiring.thick2ofn.parsing :as p]
-            [wiring.thick2owl.typeHandling :as typeHandling]
-            [wiring.thick2owl.labelHandling :as labelHandling]
-            [wiring.thick2ofn.axiomTranslation :as thick2ofn] 
+            [wiring.typing.typeHandling :as typeHandling]
+            [wiring.labelling.labelHandling :as labelHandling]
+            [wiring.thick2ofn.axiomTranslation.translate :as thick2ofn] 
             [hiccup.core :as hicc] 
             [cheshire.core :as cs]
             [clojure.java.io :as io])
@@ -21,9 +21,9 @@
   (def subclasses #{})
   (def classAxioms #{})
 
-  (with-open [rdr (io/reader (io/resource "tests/thickClassExpressions.txt"))]
   ;(with-open [rdr (io/reader (io/resource "tests/thickClassExpressions.txt"))]
-  ;(with-open [rdr (io/reader (io/resource "tests/thickOBO.txt"))]
+  ;(with-open [rdr (io/reader (io/resource "tests/thickClassExpressions.txt"))]
+  (with-open [rdr (io/reader (io/resource "tests/thickOBO.txt"))]
     (doseq [line (line-seq rdr)]
       ;building the type map
       (if (thickTriples/typingTriple? (p/parse line)) 
@@ -57,26 +57,30 @@
   ;(def rdfaExpressions (map #(axiomTranslation/translate (cs/parse-string %) subject2labels) typedExpressions))
 
   (def ofnExpressions (map thick2ofn/translate classAxioms))
+
   ;handle typing 
-  (def typedExpressions (map #(typeHandling/translate (cs/parse-string %) subject2types) ofnExpressions))
+  (def typedExpressions (map #(typeHandling/translate % subject2types) ofnExpressions))
 
   ;label handling
-  (def labelSubstitution (map #(labelHandling/translate (cs/parse-string %) subject2labels) typedExpressions)) 
+  (def labelSubstitution (map #(labelHandling/translate % subject2labels) typedExpressions)) 
 
-  (def rdfaExpressions (map #(axiomTranslation/translate (cs/parse-string %) subject2labels) typedExpressions))
+  ;rdfa
+  (def rdfaExpressions (map #(axiomTranslation/translate % subject2labels) typedExpressions))
 
   ;(def rdfaExpressions (map #(axiomTranslation/translate (cs/parse-string %) subject2labels) labelSubstitution))
 
-  (println subject2labels)
-  (println classAxioms)
-  (println typedExpressions)
+  ;(println ofnExpressions)
+  ;(println typedExpressions)
+  ;(println labelSubstitution)
+  ;(println subject2labels)
+  ;(println classAxioms)
+  ;(println typedExpressions)
   ;(println rdfaExpressions)
 
-    (doseq [item rdfaExpressions]
-      (println "")
-      (println item)
-      (println "")
-      (println "hicc convert")
-      (println (hicc/html item))) 
+  (doseq [item rdfaExpressions]
+    (println "===")
+    (println item)
+    (println (hicc/html item))) 
+    (println "===")
 
   )
