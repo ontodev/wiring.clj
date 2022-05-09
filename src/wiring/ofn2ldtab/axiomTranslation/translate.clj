@@ -48,10 +48,10 @@
     (case operator
 
       ;class expression axioms
-      "SubClassOf" (CEA/translateSubclassOf ofn)
-      "DisjointUnion" (CEA/translateDisjointUnion ofn)
-      "DisjointClasses" (CEA/translateDisjointClasses ofn)
-      "EquivalentClasses" (CEA/translateEquivalentClasses ofn)
+      "SubClassOf" (CEA/translateSubclassOf ofn graph)
+      "DisjointUnion" (CEA/translateDisjointUnion ofn graph)
+      "DisjointClasses" (CEA/translateDisjointClasses ofn graph)
+      "EquivalentClasses" (CEA/translateEquivalentClasses ofn graph)
       
       ;TODO object property axioms
       "SubObjectPropertyOf" (PEA/translateSubObjectPropertyOf ofn)
