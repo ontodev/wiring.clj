@@ -33,14 +33,20 @@
   :subprotocol "sqlite"
   :subname path})
 
+(defn ldtab-json-parse
+  [string]
+  (try (cs/parse-string string true)
+       (catch Exception e string)))
+
+
 (defn parse-sql-thick-triple
   [thick] 
   (-> thick
-    (update :subject #(cs/parse-string % true))
-    (update :predicate #(cs/parse-string % true))
-    (update :object #(cs/parse-string % true))
-    (update :datatype #(cs/parse-string % true))
-    (update :annotation #(cs/parse-string % true))))
+    (update :subject #(ldtab-json-parse %))
+    (update :predicate #(ldtab-json-parse %))
+    (update :object #(ldtab-json-parse %))
+    (update :datatype #(ldtab-json-parse %))
+    (update :annotation #(ldtab-json-parse %))))
 
 
 

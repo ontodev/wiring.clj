@@ -13,7 +13,7 @@
   (let [db-spec {:classname "org.sqlite.JDBC"
             :subprotocol "sqlite"
             :subname path-to-database}] 
-    (jdbc/query db-spec [(str "SELECT * FROM statement WHERE datatype='\"_json\"'")])))
+    (jdbc/query db-spec [(str "SELECT * FROM statement WHERE datatype='_JSON'")])))
 
 (defn -main
   "Currently only used for manual testing."
@@ -27,6 +27,7 @@
     ;(println (map t/translate (p/get-triples-of "\"http://www.semanticweb.org/chris/ontologies/2022/1/untitled-ontology-354#A\"" (first args))))))
 
     ;(println (map #(t/translate (p/parse-sql-thick-triple %)) (p/get-triples-of "\"http://www.semanticweb.org/chris/ontologies/2022/1/untitled-ontology-354#A\"" (first args))))))
+
     (run! println (map #(t/translate (p/parse-sql-thick-triple %)) (get-triples (first args)))))
 
 
