@@ -1,6 +1,6 @@
 (ns wiring.ldtab2ofn.util
   (:require [clojure.repl :as repl]
-            [clojure.string :as s]
+            [clojure.string :as str]
             [clojure.spec.alpha :as spec]
             [wiring.ldtab2ofn.spec :as owlspec]))
 
@@ -22,6 +22,5 @@
 ;
 (defn getNumber [xsd]
   "Extract n from \"n\"^^xsd:nonNegativeInteger."
-  (first (s/split xsd #"\^")))
-  ;(str "\"" (first (s/split xsd #"\^")) "\""))
+  (first (str/split xsd #"\^")))
 
