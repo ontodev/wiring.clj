@@ -1,6 +1,6 @@
 (ns wiring.ldtab2ofn.axiomTranslation.translate
   (:require [clojure.repl :as repl]
-            [clojure.string :as s]
+            [clojure.string :as str]
             [clojure.spec.alpha :as spec]
             [wiring.ldtab2ofn.expressionTranslation.propertyTranslation :as propertyTranslation] 
             [wiring.ldtab2ofn.typeInference :as typeInference]
@@ -90,15 +90,6 @@
 ;;                    Translation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn handle-datatype
-  ;assumption: object is a string (and not a map)
-  [object datatype]
-  (cond
-    (= datatype "_IRI") object
-    (= datatype "_plain") object
-    (s/starts-with? datatype "@") (str "\"" object "\"" datatype)
-    :else (str "\"" object "\"" "^^" datatype)))
-
 
 (defn translateThinTriples
   "Translate ThinTriples"
@@ -110,7 +101,7 @@
     (if (and (string? subject)
              (string? predicate)
              (string? object))
-      (vector "ThinTriple" subject predicate (handle-datatype object datatype))
+      (vector "ThinTriple" subject predicate (util/encode-entity object datatype))
       (vector "Error" subject predicate object))))
 
 (defn translateIndividualAssertion

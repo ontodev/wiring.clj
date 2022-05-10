@@ -7,26 +7,21 @@
 (defn typed? [predicates]
   (contains? predicates :rdf:type))
 
+(defn encode-entity
+  ([entity] ;this is expected to be OFN
+   ;(if (map? entity);so it should never be a map
+     ;(encode-entity entity (:datatype entity))
+     entity) 
+  ([entity datatype];entity is OFN - datatype is from predicate map
+   (cond
+     (= datatype "_IRI") entity
+     (= datatype "_JSON") entity 
+     (= datatype "_plain") entity
+     (str/starts-with? datatype "@") (str "\"" entity "\"" datatype)
+     :else (str "\"" entity "\"" "^^" datatype))))
+;
 (defn getNumber [xsd]
   "Extract n from \"n\"^^xsd:nonNegativeInteger."
   (first (s/split xsd #"\^")))
   ;(str "\"" (first (s/split xsd #"\^")) "\""))
 
-(defn ofsFormat
-  "Serialises a list of entities into a valid OFN-S expression."
-  [& args]
-  (let [s (seq args)
-        firstOperator (str "\"" (first s) "\"")
-        arguments (interpose, "," (rest s))
-        string (apply str arguments)
-        brackets (str "[" firstOperator "," string "]")]
-    brackets))
-
-;this is used for lists because we don't interpret them as expressions
-(defn ofsFormatNoBrackets
-  "Serialises a list of entities into a valid OFN-S expression."
-  [& args]
-  (let [s (seq args)
-        commas (interpose, "," s)
-        string (apply str commas)]
-    string))

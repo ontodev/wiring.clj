@@ -62,13 +62,6 @@
         property2 (propertyTranslation/translate (:object predicates))]
     (vector "InverseObjectProperties" property1 property2)))
 
-;;NB these things all follow the same structure - should they be refactored into a single function?
-;(defn translateThinPropertyAxiom
-;  "Translate thin property axioms"
-;  [predicates description]
-;  (let [property (propertyTranslation/translate (:subject predicates))]
-;    (util/ofsFormat description property)))
-
 ;;hardcoding things
 (defn translateFunctionalProperty
   "Translate owl:FunctionalProperty"
