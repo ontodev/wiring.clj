@@ -206,7 +206,6 @@
 (defn translate-string
   [string]
   (let [datatype (u/get-datetype string)]
-    (println string)
     (case datatype
       "URI" string
       "CURIE" string

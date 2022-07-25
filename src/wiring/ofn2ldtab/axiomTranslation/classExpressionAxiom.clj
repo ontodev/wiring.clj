@@ -4,12 +4,34 @@
             [wiring.ofn2ldtab.util :as u]
             [clojure.spec.alpha :as spec]
             [wiring.ofn2ldtab.expressionTranslation.classTranslation :as classTranslation]
+            [wiring.ofn2ldtab.annotationTranslation.translate :as ann]
             [wiring.ofn2ldtab.spec :as owlspec])
   (:gen-class))
 
 ;TODO; make sure generated blank nodes are unique 
 ;(this is best done in a post-processing step I guess)
 (declare translate)
+
+(defn has-annotation
+  [ofn]
+  (and (coll? (second ofn))
+       (= "Annotation" (first (second ofn)))))
+
+(defn get-annotation
+  [ofn]
+  (when (has-annotation ofn)
+    (second ofn)))
+
+(defn strip-annotation
+  [ofn]
+  (let [[operator _annotation & arguments] ofn]
+    (conj arguments operator)))
+
+(defn get-owl
+  [ofn]
+  (if (has-annotation ofn)
+    (strip-annotation ofn)
+    ofn)) 
 
 (defn translateList
   "Translate class expressions into an RDF list"
@@ -25,9 +47,12 @@
 (defn translateEquivalentClasses
   "Translate a EquivalentClasses axiom"
   [ofn graph]
-  {:pre [(spec/valid? ::owlspec/equivalentClasses ofn)]}
-  (if (= 3 (count ofn))
-    (let [[operator lhs rhs] ofn;non-list case
+  ;{:pre [(spec/valid? ::owlspec/equivalentClasses ofn)]}
+  (let [annotation (get-annotation ofn)
+        ofn (get-owl ofn)]
+
+  (if (= 3 (count ofn)) 
+    (let [[_operator lhs rhs] ofn;non-list case
           object (classTranslation/translate rhs)
           triple {:assertion 1
                   :retraction 0
@@ -36,10 +61,9 @@
                   :predicate "owl:equivalentClass"
                   :object object
                   :datatype (u/translate-datatype object)
-                  :annotation "TODO"
-                  }]
+                  :annotation (ann/translate annotation) }]
       triple) 
-    (let [[operator & arguments] ofn;list case
+    (let [[_operator & arguments] ofn;list case
           object (translateList arguments)
           triple {:assertion 1
                   :retraction 0
@@ -48,15 +72,16 @@
                   :predicate "owl:equivalentClass"
                   :object object
                   :datatype "_JSON"
-                  :annotation "TODO"
-                  }]
-      triple))) 
+                  :annotation (ann/translate annotation) }]
+      triple))))
 
 (defn translateDisjointClasses
   "Translate a DisjointClasses axiom"
   [ofn graph]
-  {:pre [(spec/valid? ::owlspec/disjointClasses ofn)]}
-  (let [[operator & arguments] ofn
+  ;{:pre [(spec/valid? ::owlspec/disjointClasses ofn)]}
+  (let [annotation (get-annotation ofn)
+        ofn (get-owl ofn) 
+        [_operator & arguments] ofn
         triple {:assertion 1
                 :retraction 0
                 :graph graph
@@ -64,9 +89,7 @@
                 :predicate "owl:AllDisjointClasses"
                 :object {:owl:members (translateList arguments)}
                 :datatype "_JSON"
-                :annotation "TODO"
-                }
-
+                :annotation (ann/translate annotation) } 
         object (classTranslation/translate (second arguments))
         tuple {:assertion 1
                :retraction 0
@@ -75,8 +98,7 @@
                :predicate "owl:disjointWith"
                :object object
                :datatype (u/translate-datatype object)
-               :annotation "TODO" 
-               }]
+               :annotation (ann/translate annotation) }]
     (if (= (count arguments) 2)
       tuple
       triple)))
@@ -84,8 +106,10 @@
 (defn translateDisjointUnion
   "Translate a DisjointUnion axiom"
   [ofn graph]
-  {:pre [(spec/valid? ::owlspec/disjointUnion ofn)]}
-  (let [[operator lhs & arguments] ofn
+  ;{:pre [(spec/valid? ::owlspec/disjointUnion ofn)]}
+  (let [annotation (get-annotation ofn)
+        ofn (get-owl ofn)
+        [_operator lhs & arguments] ofn
         object (translateList arguments)
         triple {:assertion 1;TODO
                 :retraction 0
@@ -94,15 +118,15 @@
                 :predicate "owl:disjointUnionOf"
                 :object object
                 :datatype (u/translate-datatype object)
-                :annotation "TODO" ;todo
-                }]
+                :annotation (ann/translate annotation) }]
     triple)) 
 
 (defn translateSubclassOf
   "Translate a SubClassOf axiom"
   [ofn graph]
-  {:pre [(spec/valid? ::owlspec/subclassOf ofn)]}
-  (let [[op lhs rhs] ofn
+  ;{:pre [(spec/valid? ::owlspec/subclassOf ofn)]}
+  (let [annotation (get-annotation ofn)
+        [_op lhs rhs]  (get-owl ofn)
         triple {:assertion 1 ;TODO 
                 :retraction 0
                 :graph graph
@@ -110,14 +134,15 @@
                 :predicate "rdfs:subClassOf"
                 :object (classTranslation/translate rhs)
                 :datatype (u/translate-datatype rhs)
-                :annotation "TODO" ;TODO OFN S-expression with annotations
-                }]
+                :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateThinTriple
   "Translate Thin Triples"
   [ofn graph]
-  (let [[op s p o] ofn
+  (let [annotation (get-annotation ofn)
+        ofn (get-owl ofn)
+        [_op s p o] ofn
         triple {:assertion 1 ;TODO
                 :retraction 0
                 :graph graph
@@ -125,8 +150,7 @@
                 :predicate p
                 :object o
                 :datatype (u/translate-datatype o)
-                :annotation "TODO"
-                }]
+                :annotation (ann/translate annotation) }]
     triple)) 
 
 (defn translate
@@ -139,6 +163,6 @@
       "DisjointUnion" (translateDisjointUnion ofn graph)
       "DisjointClasses" (translateDisjointClasses ofn graph)
       "EquivalentClasses" (translateEquivalentClasses ofn graph)
-      "ThinTriple" (translateThinTriple ofn graph) 
+      "ThinTriple" (translateThinTriple ofn graph) ;TODO: do we need "untyped" ThinTriples?
       (str "ERROR: " ofn)))) ;this case should also not be called
 
