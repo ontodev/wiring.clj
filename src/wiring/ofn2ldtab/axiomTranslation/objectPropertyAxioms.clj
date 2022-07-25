@@ -2,14 +2,13 @@
   (:require [clojure.repl :as repl]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as spec]
-            [wiring.ofn2ldtab.expressionTranslation.classTranslation :as propertyTranslation]
+            [wiring.ofn2ldtab.expressionTranslation.propertyTranslation :as propertyTranslation]
             [wiring.ofn2ldtab.expressionTranslation.classTranslation :as classTranslation]
             [wiring.ofn2ldtab.annotationTranslation.translate :as ann]
             [wiring.ofn2ldtab.spec :as owlspec])
   (:gen-class))
 
 
-;TODO: fix propertyChainAxiom
 ;TODO: complete LDTab thick triples (graph, assertion, etc.)
 
 (defn translateList
@@ -23,31 +22,22 @@
              {:rdf:first [{:object (propertyTranslation/translate (first in)) }]
               :rdf:rest [{:object out}]}))))
 
+
 (defn translateSubObjectPropertyOf
   "Translate SubObjectPropertyOf"
   [ofn]
   (let [annotation (ann/get-annotation ofn)
         owl (ann/get-owl ofn)
-        [_op sub sup] owl
-    triple {:subject (propertyTranslation/translate sub)
-            :predicate "rdfs:subPropertyOf"
-            :object (propertyTranslation/translate sup)
-            :annotation (ann/translate annotation)}]
-    triple))
-
-;TODO: a propertyChainAxiom takes a list as an argument
-(defn translatePropertyChainAxiom
-  "Translate ObjectPropertyChain"
-  [ofn]
-  (let [annotation (ann/get-annotation ofn)
-        owl (ann/get-owl ofn)
-        [_op s o] owl
-    triple {:subject (propertyTranslation/translate s);TODO: this is a list
-            :predicate "owl:propertyChainAxiom"
-            :object (propertyTranslation/translate o)
-            :annotation (ann/translate annotation) }]
-    triple))
-
+        [_op sub sup] owl]
+    (if (coll? sub)
+      {:subject (propertyTranslation/translate sup)
+       :predicate "owl:propertyChainAxiom"
+       :object (propertyTranslation/translate sub)
+       :annotation (ann/translate annotation)} 
+      {:subject (propertyTranslation/translate sub)
+       :predicate "rdfs:subPropertyOf"
+       :object (propertyTranslation/translate sup)
+       :annotation (ann/translate annotation)})))
 
 (defn translateDomain
   "Translate property domain"
@@ -210,7 +200,6 @@
     ;(println predicateMap)
     (case operator
       "SubObjectPropertyOf" (translateSubObjectPropertyOf ofn)
-      "ObjectPropertyChain" (translatePropertyChainAxiom ofn)
       ;"DisjointObjectProperties" (translateDisjointProperties ofn)
       "ObjectPropertyDomain" (translateDomain ofn)
       "ObjectPropertyRange" (translateRange ofn)

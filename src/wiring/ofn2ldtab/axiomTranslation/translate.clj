@@ -55,7 +55,6 @@
       
       ;TODO object property axioms
       "SubObjectPropertyOf" (PEA/translateSubObjectPropertyOf ofn)
-      "ObjectPropertyChain" (PEA/translatePropertyChainAxiom ofn)
       "ObjectPropertyDomain" (PEA/translateDomain ofn)
       "ObjectPropertyRange" (PEA/translateRange ofn)
       "InverseObjectProperties" (PEA/translateInverseOf ofn) 
