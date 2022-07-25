@@ -9,6 +9,27 @@
   (:gen-class))
 (declare translate)
 
+(defn has-annotation
+  [ofn]
+  (and (coll? (second ofn))
+       (= "Annotation" (first (second ofn)))))
+
+(defn get-annotation
+  [ofn]
+  (when (has-annotation ofn)
+    (second ofn)))
+
+(defn strip-annotation
+  [ofn]
+  (let [[operator _annotation & arguments] ofn]
+    (conj arguments operator)))
+
+(defn get-owl
+  [ofn]
+  (if (has-annotation ofn)
+    (strip-annotation ofn)
+    ofn)) 
+
 (defn is-literal
   [input]
   (let [match (re-matches #"^\"(.+)\"(.*)$" input)]

@@ -12,26 +12,6 @@
 ;(this is best done in a post-processing step I guess)
 (declare translate)
 
-(defn has-annotation
-  [ofn]
-  (and (coll? (second ofn))
-       (= "Annotation" (first (second ofn)))))
-
-(defn get-annotation
-  [ofn]
-  (when (has-annotation ofn)
-    (second ofn)))
-
-(defn strip-annotation
-  [ofn]
-  (let [[operator _annotation & arguments] ofn]
-    (conj arguments operator)))
-
-(defn get-owl
-  [ofn]
-  (if (has-annotation ofn)
-    (strip-annotation ofn)
-    ofn)) 
 
 (defn translateList
   "Translate class expressions into an RDF list"
@@ -48,8 +28,8 @@
   "Translate a EquivalentClasses axiom"
   [ofn graph]
   ;{:pre [(spec/valid? ::owlspec/equivalentClasses ofn)]}
-  (let [annotation (get-annotation ofn)
-        ofn (get-owl ofn)]
+  (let [annotation (ann/get-annotation ofn)
+        ofn (ann/get-owl ofn)]
 
   (if (= 3 (count ofn)) 
     (let [[_operator lhs rhs] ofn;non-list case
@@ -79,8 +59,8 @@
   "Translate a DisjointClasses axiom"
   [ofn graph]
   ;{:pre [(spec/valid? ::owlspec/disjointClasses ofn)]}
-  (let [annotation (get-annotation ofn)
-        ofn (get-owl ofn) 
+  (let [annotation (ann/get-annotation ofn)
+        ofn (ann/get-owl ofn) 
         [_operator & arguments] ofn
         triple {:assertion 1
                 :retraction 0
@@ -107,8 +87,8 @@
   "Translate a DisjointUnion axiom"
   [ofn graph]
   ;{:pre [(spec/valid? ::owlspec/disjointUnion ofn)]}
-  (let [annotation (get-annotation ofn)
-        ofn (get-owl ofn)
+  (let [annotation (ann/get-annotation ofn)
+        ofn (ann/get-owl ofn)
         [_operator lhs & arguments] ofn
         object (translateList arguments)
         triple {:assertion 1;TODO
@@ -125,8 +105,8 @@
   "Translate a SubClassOf axiom"
   [ofn graph]
   ;{:pre [(spec/valid? ::owlspec/subclassOf ofn)]}
-  (let [annotation (get-annotation ofn)
-        [_op lhs rhs]  (get-owl ofn)
+  (let [annotation (ann/get-annotation ofn)
+        [_op lhs rhs]  (ann/get-owl ofn)
         triple {:assertion 1 ;TODO 
                 :retraction 0
                 :graph graph
@@ -140,8 +120,8 @@
 (defn translateThinTriple
   "Translate Thin Triples"
   [ofn graph]
-  (let [annotation (get-annotation ofn)
-        ofn (get-owl ofn)
+  (let [annotation (ann/get-annotation ofn)
+        ofn (ann/get-owl ofn)
         [_op s p o] ofn
         triple {:assertion 1 ;TODO
                 :retraction 0
