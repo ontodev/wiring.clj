@@ -4,8 +4,13 @@
             [clojure.spec.alpha :as spec]
             [wiring.ofn2ldtab.expressionTranslation.classTranslation :as propertyTranslation]
             [wiring.ofn2ldtab.expressionTranslation.classTranslation :as classTranslation]
+            [wiring.ofn2ldtab.annotationTranslation.translate :as ann]
             [wiring.ofn2ldtab.spec :as owlspec])
   (:gen-class))
+
+
+;TODO: fix propertyChainAxiom
+;TODO: complete LDTab thick triples (graph, assertion, etc.)
 
 (defn translateList
   "Translate class expressions into an RDF list"
@@ -18,139 +23,182 @@
              {:rdf:first [{:object (propertyTranslation/translate (first in)) }]
               :rdf:rest [{:object out}]}))))
 
-;TODO recursive property translation
 (defn translateSubObjectPropertyOf
   "Translate SubObjectPropertyOf"
   [ofn]
-  (let [[op sub sup] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op sub sup] owl
     triple {:subject (propertyTranslation/translate sub)
             :predicate "rdfs:subPropertyOf"
-            :object (propertyTranslation/translate sup)}]
+            :object (propertyTranslation/translate sup)
+            :annotation (ann/translate annotation)}]
     triple))
 
+;TODO: a propertyChainAxiom takes a list as an argument
 (defn translatePropertyChainAxiom
   "Translate ObjectPropertyChain"
   [ofn]
-  (let [[op s o] ofn
-    triple {:subject (propertyTranslation/translate s)
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s o] owl
+    triple {:subject (propertyTranslation/translate s);TODO: this is a list
             :predicate "owl:propertyChainAxiom"
-            :object (propertyTranslation/translate o)}]
+            :object (propertyTranslation/translate o)
+            :annotation (ann/translate annotation) }]
     triple))
 
 
 (defn translateDomain
   "Translate property domain"
   [ofn]
-  (let [[op s o] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s o] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "rdfs:domain"
-            :object (classTranslation/translate o)}]
+            :object (classTranslation/translate o)
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateRange
   "Translate property range"
   [ofn]
-  (let [[op s o] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s o] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "rdfs:range"
-            :object (classTranslation/translate o)}]
+            :object (classTranslation/translate o)
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateInverseOf
   "Translate inverse of"
   [ofn]
-  (let [[op s o] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s o] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "owl:inverseOf"
-            :object (propertyTranslation/translate o)}]
+            :object (propertyTranslation/translate o)
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateFunctionalProperty
   "Translate FunctionalProperty"
   [ofn]
-  (let [[op s] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "rdf:type"
-            :object "owl:FunctionalProperty"}]
+            :object "owl:FunctionalProperty"
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateInverseFunctionalProperty
   "Translate InverseFunctionalProperty"
   [ofn]
-  (let [[op s] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn) 
+        [_op s] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "rdf:type"
-            :object "owl:InverseFunctionalProperty"}]
+            :object "owl:InverseFunctionalProperty"
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateReflexiveProperty
   "Translate ReflexiveProperty"
   [ofn]
-  (let [[op s] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "rdf:type"
-            :object "owl:ReflexiveProperty"}]
+            :object "owl:ReflexiveProperty"
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateIrreflexiveProperty
   "Translate IrreflexiveObjectProperty"
   [ofn]
-  (let [[op s] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "rdf:type"
-            :object "owl:IrreflexiveProperty"}]
+            :object "owl:IrreflexiveProperty"
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateAsymmetricProperty
   "Translate AsymmetricObjectProperty"
   [ofn]
-  (let [[op s] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "rdf:type"
-            :object "owl:AsymmetricProperty"}]
+            :object "owl:AsymmetricProperty"
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateSymmetricProperty
   "Translate SymmetricObjectProperty"
   [ofn]
-  (let [[op s] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "rdf:type"
-            :object "owl:SymmetricProperty"}]
+            :object "owl:SymmetricProperty"
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateTransitiveProperty
   "Translate TransitiveObjectProperty"
   [ofn]
-  (let [[op s] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "rdf:type"
-            :object "owl:TransitiveProperty"}]
+            :object "owl:TransitiveProperty"
+            :annotation (ann/translate annotation) }]
     triple))
 
 (defn translateTwoDisjointProperties
   "Translate DisjointProperties"
   [ofn]
-  (let [[op s o] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op s o] owl
     triple {:subject (propertyTranslation/translate s)
             :predicate "owl:propertyDisjointWith"
-            :object (propertyTranslation/translate o)}]
+            :object (propertyTranslation/translate o)
+            :annotation (ann/translate annotation) }]
     triple)) 
 
 ;TODO: check translation for thick2ofn first
 (defn translateAllDisjointProperties 
   "Translate DisjointProperties"
   [ofn]
-  (let [[_op & s] ofn
+  (let [annotation (ann/get-annotation ofn)
+        owl (ann/get-owl ofn)
+        [_op & s] owl
         triple {:subject (gensym "_:genid")
                 :predicate "owl:AllDisjointProperties" 
-                :object {:members (translateList s)}}]
+                :object {:members (translateList s)}
+                :annotation (ann/translate annotation) }]
     triple)) 
 
 (defn translateDisjointProperties
   "Translate DisjointProperties"
   [ofn]
-  (let [[_operator & arguments] ofn]
+  (let [owl (ann/get-owl ofn)
+        [_operator & arguments] owl]
     (if (= 2 (count arguments))
       (translateTwoDisjointProperties ofn)
       (translateAllDisjointProperties ofn))))
