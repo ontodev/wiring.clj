@@ -37,14 +37,6 @@
             :object (propertyTranslation/translate o)}]
     triple))
 
-(defn translateDisjointProperties
-  "Translate DisjointProperties"
-  [ofn]
-  (let [[op s o] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "owl:propertyDisjointWith"
-            :object (propertyTranslation/translate o)}]
-    triple))
 
 (defn translateDomain
   "Translate property domain"
@@ -136,15 +128,32 @@
             :object "owl:TransitiveProperty"}]
     triple))
 
+(defn translateTwoDisjointProperties
+  "Translate DisjointProperties"
+  [ofn]
+  (let [[op s o] ofn
+    triple {:subject (propertyTranslation/translate s)
+            :predicate "owl:propertyDisjointWith"
+            :object (propertyTranslation/translate o)}]
+    triple)) 
+
 ;TODO: check translation for thick2ofn first
 (defn translateAllDisjointProperties 
   "Translate DisjointProperties"
   [ofn]
-  (let [[op s] ofn
+  (let [[_op & s] ofn
         triple {:subject (gensym "_:genid")
                 :predicate "owl:AllDisjointProperties" 
-                :object [{:object [{:members (translateList s)}]}]}]
-    triple))
+                :object {:members (translateList s)}}]
+    triple)) 
+
+(defn translateDisjointProperties
+  "Translate DisjointProperties"
+  [ofn]
+  (let [[_operator & arguments] ofn]
+    (if (= 2 (count arguments))
+      (translateTwoDisjointProperties ofn)
+      (translateAllDisjointProperties ofn))))
 
 (defn translate
   "Translate OFN-S expression to thick triple"
