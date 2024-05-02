@@ -15,7 +15,7 @@
     (if (empty? in)
       out
       (recur (rest in)
-             {:rdf:first [{:object (propertyTranslation/translate (first in)) }]
+             {:rdf:first [{:object (propertyTranslation/translate (first in))}]
               :rdf:rest [{:object out}]}))))
 
 ;TODO recursive property translation
@@ -23,126 +23,126 @@
   "Translate SubObjectPropertyOf"
   [ofn]
   (let [[op sub sup] ofn
-    triple {:subject (propertyTranslation/translate sub)
-            :predicate "rdfs:subPropertyOf"
-            :object (propertyTranslation/translate sup)}]
+        triple {:subject (propertyTranslation/translate sub)
+                :predicate "rdfs:subPropertyOf"
+                :object (propertyTranslation/translate sup)}]
     triple))
 
 (defn translatePropertyChainAxiom
   "Translate ObjectPropertyChain"
   [ofn]
   (let [[op s o] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "owl:propertyChainAxiom"
-            :object (propertyTranslation/translate o)}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "owl:propertyChainAxiom"
+                :object (propertyTranslation/translate o)}]
     triple))
 
 (defn translateDisjointProperties
   "Translate DisjointProperties"
   [ofn]
   (let [[op s o] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "owl:propertyDisjointWith"
-            :object (propertyTranslation/translate o)}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "owl:propertyDisjointWith"
+                :object (propertyTranslation/translate o)}]
     triple))
 
 (defn translateDomain
   "Translate property domain"
   [ofn]
   (let [[op s o] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "rdfs:domain"
-            :object (classTranslation/translate o)}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "rdfs:domain"
+                :object (classTranslation/translate o)}]
     triple))
 
 (defn translateRange
   "Translate property range"
   [ofn]
   (let [[op s o] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "rdfs:range"
-            :object (classTranslation/translate o)}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "rdfs:range"
+                :object (classTranslation/translate o)}]
     triple))
 
 (defn translateInverseOf
   "Translate inverse of"
   [ofn]
   (let [[op s o] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "owl:inverseOf"
-            :object (propertyTranslation/translate o)}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "owl:inverseOf"
+                :object (propertyTranslation/translate o)}]
     triple))
 
 (defn translateFunctionalProperty
   "Translate FunctionalProperty"
   [ofn]
   (let [[op s] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "rdf:type"
-            :object "owl:FunctionalProperty"}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "rdf:type"
+                :object "owl:FunctionalProperty"}]
     triple))
 
 (defn translateInverseFunctionalProperty
   "Translate InverseFunctionalProperty"
   [ofn]
   (let [[op s] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "rdf:type"
-            :object "owl:InverseFunctionalProperty"}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "rdf:type"
+                :object "owl:InverseFunctionalProperty"}]
     triple))
 
 (defn translateReflexiveProperty
   "Translate ReflexiveProperty"
   [ofn]
   (let [[op s] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "rdf:type"
-            :object "owl:ReflexiveProperty"}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "rdf:type"
+                :object "owl:ReflexiveProperty"}]
     triple))
 
 (defn translateIrreflexiveProperty
   "Translate IrreflexiveObjectProperty"
   [ofn]
   (let [[op s] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "rdf:type"
-            :object "owl:IrreflexiveProperty"}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "rdf:type"
+                :object "owl:IrreflexiveProperty"}]
     triple))
 
 (defn translateAsymmetricProperty
   "Translate AsymmetricObjectProperty"
   [ofn]
   (let [[op s] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "rdf:type"
-            :object "owl:AsymmetricProperty"}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "rdf:type"
+                :object "owl:AsymmetricProperty"}]
     triple))
 
 (defn translateSymmetricProperty
   "Translate SymmetricObjectProperty"
   [ofn]
   (let [[op s] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "rdf:type"
-            :object "owl:SymmetricProperty"}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "rdf:type"
+                :object "owl:SymmetricProperty"}]
     triple))
 
 (defn translateTransitiveProperty
   "Translate TransitiveObjectProperty"
   [ofn]
   (let [[op s] ofn
-    triple {:subject (propertyTranslation/translate s)
-            :predicate "rdf:type"
-            :object "owl:TransitiveProperty"}]
+        triple {:subject (propertyTranslation/translate s)
+                :predicate "rdf:type"
+                :object "owl:TransitiveProperty"}]
     triple))
 
 ;TODO: check translation for thick2ofn first
-(defn translateAllDisjointProperties 
+(defn translateAllDisjointProperties
   "Translate DisjointProperties"
   [ofn]
   (let [[op s] ofn
         triple {:subject (gensym "_:genid")
-                :predicate "owl:AllDisjointProperties" 
+                :predicate "owl:AllDisjointProperties"
                 :object [{:object [{:members (translateList s)}]}]}]
     triple))
 

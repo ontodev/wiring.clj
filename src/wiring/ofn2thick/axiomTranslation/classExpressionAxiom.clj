@@ -18,7 +18,7 @@
     (if (empty? in)
       out
       (recur (rest in)
-             {:rdf:first [{:object (classTranslation/translate (first in)) }]
+             {:rdf:first [{:object (classTranslation/translate (first in))}]
               :rdf:rest [{:object out}]}))))
 
 (defn translateEquivalentClasses
@@ -30,12 +30,12 @@
           triple {:subject (classTranslation/translate lhs)
                   :predicate "owl:equivalentClass"
                   :object (classTranslation/translate rhs)}]
-      triple) 
+      triple)
     (let [[operator & arguments] ofn;list case
           triple {:subject (gensym "_:genid")
                   :predicate "owl:equivalentClass"
                   :object (translateList arguments)}]
-      triple))) 
+      triple)))
 
 (defn translateDisjointClasses
   "Translate a DisjointClasses axiom"
@@ -60,7 +60,7 @@
         triple {:subject (classTranslation/translate lhs)
                 :predicate "owl:disjointUnionOf"
                 :object (translateList arguments)}]
-    triple)) 
+    triple))
 
 (defn translateSubclassOf
   "Translate a SubClassOf axiom"
@@ -79,7 +79,7 @@
         triple {:subject s
                 :predicate p
                 :object o}]
-    triple)) 
+    triple))
 
 (defn translate
   "Translate OFN-S expression to thick triple"

@@ -12,7 +12,7 @@
 ;(this is best done in a post-processing step I guess)
 (declare translate)
 
-(defn translateThinTriple 
+(defn translateThinTriple
   "Translate OFN-S thin triple to thick triple thin triple"
   [ofn]
   ;TODO
@@ -20,9 +20,9 @@
         triple {:subject s
                 :predicate p
                 :object o}]
-  triple))
+    triple))
 
-(defn translateClassAssertion 
+(defn translateClassAssertion
   "Translate OFN-S class assertions into thick triples"
   [ofn]
   ;TODO
@@ -30,7 +30,7 @@
         triple {:subject s
                 :predicate "rdf:type"
                 :object (classTranslation/translate o)}]
-  triple))
+    triple))
 
 (defn translate
   "Translate OFN-S expression to thick triple"
@@ -43,13 +43,13 @@
       "DisjointUnion" (CEA/translateDisjointUnion ofn)
       "DisjointClasses" (CEA/translateDisjointClasses ofn)
       "EquivalentClasses" (CEA/translateEquivalentClasses ofn)
-      
+
       ;TODO object property axioms
       "SubObjectPropertyOf" (PEA/translateSubObjectPropertyOf ofn)
       "ObjectPropertyChain" (PEA/translatePropertyChainAxiom ofn)
       "ObjectPropertyDomain" (PEA/translateDomain ofn)
       "ObjectPropertyRange" (PEA/translateRange ofn)
-      "InverseObjectProperties" (PEA/translateInverseOf ofn) 
+      "InverseObjectProperties" (PEA/translateInverseOf ofn)
 
       "InverseFunctionalObjectProperty" (PEA/translateInverseFunctionalProperty ofn)
       "ReflexiveObjectProperty" (PEA/translateReflexiveProperty ofn)
@@ -62,7 +62,7 @@
       ;ambiguous property axioms
       "PropertyDomain" (PEA/translateDomain ofn)
       "PropertyRange" (PEA/translateRange ofn)
-      "SubPropertyOf" (PEA/translateSubObjectPropertyOf ofn) 
+      "SubPropertyOf" (PEA/translateSubObjectPropertyOf ofn)
       "FunctionalProperty" (PEA/translateFunctionalProperty ofn)
       "DisjointProperties" (PEA/translateDisjointProperties ofn)
 

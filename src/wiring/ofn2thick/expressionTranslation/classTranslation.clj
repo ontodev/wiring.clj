@@ -2,7 +2,7 @@
   (:require [clojure.repl :as repl]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as spec]
-            [wiring.ofn2thick.propertyTranslation :as property]
+            [wiring.ofn2thick.expressionTranslation.propertyTranslation :as property];TODO fix dependency?
             [wiring.ofn2thick.spec :as owlspec])
   (:gen-class))
 
@@ -17,7 +17,7 @@
     (if (empty? in)
       out
       (recur (rest in)
-             {:rdf:first [{:object (translate (first in)) }]
+             {:rdf:first [{:object (translate (first in))}]
               :rdf:rest [{:object out}]}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -29,8 +29,8 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/someValuesFrom ofn)]}
   (let [[op property filler] ofn
-        triple {:owl:someValuesFrom [{:object (translate filler) }]
-                :owl:onProperty [{:object (property/translate property) }]
+        triple {:owl:someValuesFrom [{:object (translate filler)}]
+                :owl:onProperty [{:object (property/translate property)}]
                 :rdf:type [{:object "owl:Restriction"}]}]
     triple))
 
@@ -39,8 +39,8 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/allValuesFrom ofn)]}
   (let [[op property filler] ofn
-        triple {:owl:allValuesFrom [{:object (translate filler) }]
-                :owl:onProperty [{:object (property/translate property) }]
+        triple {:owl:allValuesFrom [{:object (translate filler)}]
+                :owl:onProperty [{:object (property/translate property)}]
                 :rdf:type [{:object "owl:Restriction"}]}]
     triple))
 
@@ -49,8 +49,8 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/hasValue ofn)]}
   (let [[op property filler] ofn
-        triple {:owl:hasValue [{:object (translate filler) }]
-                :owl:onProperty [{:object (property/translate property) }]
+        triple {:owl:hasValue [{:object (translate filler)}]
+                :owl:onProperty [{:object (property/translate property)}]
                 :rdf:type [{:object "owl:Restriction"}]}]
     triple))
 
@@ -60,8 +60,8 @@
   {:pre [(spec/valid? ::owlspec/hasSelf ofn)]}
   (let [[op property] ofn
         triple {:owl:hasSelf [{:object "true^^xsd:boolean"}]
-                :owl:onProperty [{:object (property/translate property) }]
-                :rdf:type [{:object "owl:Restriction" }]}]
+                :owl:onProperty [{:object (property/translate property)}]
+                :rdf:type [{:object "owl:Restriction"}]}]
     triple))
 
 (defn translateObjectMinUnqualifiedCardinality
@@ -69,8 +69,8 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/minCardinality ofn)]}
   (let [[op cardinality property] ofn
-        triple {:owl:minCardinality [{:object (str cardinality "^^xsd:nonNegativeInteger") }]
-                :owl:onProperty [{:object (property/translate property) }]
+        triple {:owl:minCardinality [{:object (str cardinality "^^xsd:nonNegativeInteger")}]
+                :owl:onProperty [{:object (property/translate property)}]
                 :rdf:type [{:object "owl:Restriction"}]}]
     triple))
 
@@ -80,9 +80,9 @@
   {:pre [(spec/valid? ::owlspec/minQualifiedCardinality ofn)]}
   (let [[op cardinality property filler] ofn
         triple {:owl:minQualifiedCardinality [{:object (str cardinality "^^xsd:nonNegativeInteger")}]
-                :owl:onProperty [{:object (property/translate property) }]
-                :owl:onClass [{:object (translate filler) }]
-                :rdf:type [{:object "owl:Restriction" }]}]
+                :owl:onProperty [{:object (property/translate property)}]
+                :owl:onClass [{:object (translate filler)}]
+                :rdf:type [{:object "owl:Restriction"}]}]
     triple))
 
 (defn translateObjectMinCardinality
@@ -97,8 +97,8 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/maxCardinality ofn)]}
   (let [[op cardinality property] ofn
-        triple {:owl:maxCardinality [{:object (str cardinality "^^xsd:nonNegativeInteger") }]
-                :owl:onProperty [{:object (property/translate property) }]
+        triple {:owl:maxCardinality [{:object (str cardinality "^^xsd:nonNegativeInteger")}]
+                :owl:onProperty [{:object (property/translate property)}]
                 :rdf:type [{:object "owl:Restriction"}]}]
     triple))
 
@@ -109,7 +109,7 @@
   (let [[op cardinality property filler] ofn
         triple {:owl:maxQualifiedCardinality [{:object (str cardinality "^^xsd:nonNegativeInteger")}]
                 :owl:onProperty [{:object (property/translate property)}]
-                :owl:onClass[{:object (translate filler) }]
+                :owl:onClass [{:object (translate filler)}]
                 :rdf:type [{:object "owl:Restriction"}]}]
     triple))
 
@@ -126,7 +126,7 @@
   {:pre [(spec/valid? ::owlspec/exactCardinality ofn)]}
   (let [[op cardinality property] ofn
         triple {:owl:cardinality [{:object (str cardinality "^^xsd:nonNegativeInteger")}]
-                :owl:onProperty [{:object (property/translate property) }]
+                :owl:onProperty [{:object (property/translate property)}]
                 :rdf:type [{:object "owl:Restriction"}]}]
     triple))
 
@@ -135,11 +135,11 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/exactQualifiedCardinality ofn)]}
   (let [[op cardinality property filler] ofn
-        triple {:owl:qualifiedCardinality [{:object (str cardinality "^^xsd:nonNegativeInteger") }]
-                :owl:onProperty [{:object (property/translate property) }]
-                :owl:onClass [{:object (translate filler) }]
+        triple {:owl:qualifiedCardinality [{:object (str cardinality "^^xsd:nonNegativeInteger")}]
+                :owl:onProperty [{:object (property/translate property)}]
+                :owl:onClass [{:object (translate filler)}]
                 :rdf:type [{:object "owl:Restriction"}]}]
-    triple)) 
+    triple))
 
 (defn translateObjectExactCardinality
   "Translate a ObjectExactCardinality expression"
@@ -157,9 +157,9 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/classIntersection ofn)]}
   (let [[operator & arguments] ofn
-        triple {:owl:intersectionOf [{:object (translateList arguments) }]
-                :rdf:type [{:object "owl:Class" }]}]
-    triple)) 
+        triple {:owl:intersectionOf [{:object (translateList arguments)}]
+                :rdf:type [{:object "owl:Class"}]}]
+    triple))
 
 (defn translateObjectUnion
   "Translate an ObjectIntersectionOf expression"
@@ -167,7 +167,7 @@
   {:pre [(spec/valid? ::owlspec/classUnion ofn)]}
   (let [[operator & arguments] ofn
         triple {:owl:unionOf [{:object (translateList arguments)}]
-                :rdf:type [{:object "owl:Class" }]}]
+                :rdf:type [{:object "owl:Class"}]}]
     triple))
 
 (defn translateObjectOneOf
@@ -175,7 +175,7 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/oneOf ofn)]}
   (let [[operator & arguments] ofn
-        triple {:owl:oneOf [{:object (translateList arguments) }]
+        triple {:owl:oneOf [{:object (translateList arguments)}]
                 :rdf:type [{:object "owl:Class"}]}]
     triple))
 
@@ -184,7 +184,7 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/classComplement ofn)]}
   (let [[operator argument] ofn
-        triple {:owl:complementOf [{:object (translate argument) }]
+        triple {:owl:complementOf [{:object (translate argument)}]
                 :rdf:type [{:object "owl:Class"}]}]
     triple))
 
@@ -215,4 +215,3 @@
       "ExactCardinality" (translateObjectExactCardinality ofn)
       "OneOf" (translateObjectOneOf ofn)
       ofn)))
-

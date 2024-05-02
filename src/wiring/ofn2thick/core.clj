@@ -1,6 +1,6 @@
 (ns wiring.ofn2thick.core
   (:require [clojure.repl :as repl]
-            [wiring.ofn2thick.axiomTranslation :as axiomTranslation]
+            [wiring.ofn2thick.axiomTranslation.translate :as axiomTranslation]
             [wiring.thick2ofn.axiomTranslation.translate :as t]
             [wiring.thick2ofn.parsing :as p]
             [cheshire.core :as cs]
@@ -63,11 +63,9 @@
   ;(println (cs/generate-string (axiomTranslation/translate (cs/parse-string complemen))))
   ;(println (cs/generate-string (axiomTranslation/translate (cs/parse-string inverse))))
 
-  (println "") 
-  (def thin "[\"ThinTriple\",\"s\",\"p\",\"o\"]") 
-  (println (axiomTranslation/translate (cs/parse-string thin))) 
+  (println "")
+  (def thin "[\"ThinTriple\",\"s\",\"p\",\"o\"]")
+  (println (axiomTranslation/translate (cs/parse-string thin)))
   (def ts {:subject "s" :predicate "p" :object "o"})
   (def aa (cs/generate-string ts))
-  (println aa) 
-
-  )
+  (println aa))
