@@ -31,9 +31,9 @@
   "Translate a datatype facet."
   [predicates]
   ;a facet is a map of the form {:facet :constraint} 
-  (let [facet (name (first (keys predicates))) 
+  (let [facet (name (first (keys predicates)))
         constraint (first (vals predicates))]
-    (vector "Facet" facet constraint))) 
+    (vector "Facet" facet constraint)))
 
 (defn translateRestrictions
   "Translate an RDF list of restrictions."
@@ -56,12 +56,10 @@
   {:pre [(spec/valid? ::owlspec/classIntersection predicates)]}
   (let [arguments (translate (:owl:intersectionOf predicates))]
     (cond (or (some typeInference/is-class-expression? arguments)
-            (typeInference/is-typed-as-class? predicates)) (vec (cons "ObjectIntersectionOf" arguments))
+              (typeInference/is-typed-as-class? predicates)) (vec (cons "ObjectIntersectionOf" arguments))
           (or (some typeInference/is-data-range-expression? arguments)
               (typeInference/is-typed-as-datatype? predicates)) (vec (cons "DataIntersectionOf" arguments))
-          :else (vec (cons "IntersectionOf" arguments))))) 
-
-
+          :else (vec (cons "IntersectionOf" arguments)))))
 
 (defn translateDatatypeUnion
   "Translate datatype union"

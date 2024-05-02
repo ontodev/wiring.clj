@@ -29,30 +29,31 @@
 ;is an ObjectProperty (DataProperty) or a Class (Datatype),
 ;then, we can infer the type of the expression itself.  
 
-(defn is-class-expression?  
+
+(defn is-class-expression?
   "Checks whether an expression is a non-atomic OWL class expression."
   [expression]
-    (case (first expression)
-      "ObjectSomeValuesFrom" true
-      "ObjectAllValuesFrom" true
-      "ObjectHasValue" true
-      "ObjectMinCardinality" true
-      "ObjectMaxCardinality" true
-      "ObjectExactCardinality" true
-      "ObjectIntersectionOf" true
-      "ObjectUnionOf" true
-      "ObjectOneOf" true
-      "ObjectComplementOf" true
-      "ObjectHasSelf" true
+  (case (first expression)
+    "ObjectSomeValuesFrom" true
+    "ObjectAllValuesFrom" true
+    "ObjectHasValue" true
+    "ObjectMinCardinality" true
+    "ObjectMaxCardinality" true
+    "ObjectExactCardinality" true
+    "ObjectIntersectionOf" true
+    "ObjectUnionOf" true
+    "ObjectOneOf" true
+    "ObjectComplementOf" true
+    "ObjectHasSelf" true
       ;TODO Data expressions
       ;ambiguous
-      "SomeValuesFrom" true
-      "AllValuesFrom" true
-      "HasValue" true
-      "MaxCardinality" true
-      "MinCardinality" true
-      "ExactCardinality" true
-      false))
+    "SomeValuesFrom" true
+    "AllValuesFrom" true
+    "HasValue" true
+    "MaxCardinality" true
+    "MinCardinality" true
+    "ExactCardinality" true
+    false))
 
 (defn is-typed-as-class?
   "Checks whether a predicate map is typed as an OWL class expression."
@@ -81,7 +82,7 @@
   (loop [in predicates
          out []]
     (if (= in "rdf:nil")
-      out 
+      out
       (recur (:object (first (:rdf:rest in)))
              (conj out (translate (:object (first (:rdf:first in)))))))));recursively translate class expressions
 
@@ -100,9 +101,9 @@
         filler (translate (get-object :owl:someValuesFrom))
         rawProperty (get-object :owl:onProperty)
         rawFiller (get-object :owl:someValuesFrom)]
-    (cond (or (is-typed-as-class? rawFiller) 
-            (is-typed-as-object-property? rawProperty)
-            (is-class-expression? filler)) (vector "ObjectSomeValuesFrom" onProperty filler)
+    (cond (or (is-typed-as-class? rawFiller)
+              (is-typed-as-object-property? rawProperty)
+              (is-class-expression? filler)) (vector "ObjectSomeValuesFrom" onProperty filler)
           (or (typeInference/is-typed-as-datatype? rawFiller)
               (typeInference/is-data-range-expression? filler)) (vector "DataSomeValuesFrom" onProperty filler)
           :else (vector "SomeValuesFrom" onProperty filler))))
@@ -117,8 +118,8 @@
         rawProperty (get-object :owl:onProperty)
         rawFiller (get-object :owl:someValuesFrom)]
     (cond (or (is-typed-as-class? rawFiller)
-            (is-typed-as-object-property? rawProperty)
-            (is-class-expression? filler)) (vector "ObjectAllValuesFrom" onProperty filler)
+              (is-typed-as-object-property? rawProperty)
+              (is-class-expression? filler)) (vector "ObjectAllValuesFrom" onProperty filler)
           (or (typeInference/is-typed-as-datatype? rawFiller)
               (typeInference/is-data-range-expression? filler)) (vector "DataSomeValuesFrom" onProperty filler)
           :else (vector "AllValuesFrom" onProperty filler))))
@@ -128,10 +129,10 @@
   [predicates]
   ;{:pre [(spec/valid? ::owlspec/hasValue predicates)]}
   (let [get-object (curry-predicate-map predicates)
-        onProperty (property/translate (get-object :owl:onProperty)) 
+        onProperty (property/translate (get-object :owl:onProperty))
         rawProperty (get-object :owl:onProperty)
         filler (get-object :owl:hasValue)];individual
-    (if (is-typed-as-object-property? rawProperty) 
+    (if (is-typed-as-object-property? rawProperty)
       (vector "ObjectHasValue" onProperty filler);type inference
       (vector "HasValue" onProperty filler))))
 
@@ -151,14 +152,12 @@
   [predicates]
   ;{:pre [(spec/valid? ::owlspec/minCardinality predicates)]}
   (let [get-object (curry-predicate-map predicates)
-        onProperty (property/translate (get-object :owl:onProperty)) 
+        onProperty (property/translate (get-object :owl:onProperty))
         rawProperty (get-object :owl:onProperty)
         cardinality (get-object :owl:minCardinality)]
     (if (is-typed-as-object-property? rawProperty)
       (vector "ObjectMinCardinality" cardinality onProperty)
       (vector "MinCardinality" cardinality onProperty))))
-
-
 
 (defn translateMinQualifiedCardinalityRestriction
   "Translate minimum qualified cardinality restriction."
@@ -175,7 +174,7 @@
   [predicates]
   ;{:pre [(spec/valid? ::owlspec/maxCardinality predicates)]}
   (let [get-object (curry-predicate-map predicates)
-        onProperty (property/translate (get-object :owl:onProperty)) 
+        onProperty (property/translate (get-object :owl:onProperty))
         rawProperty (get-object :owl:onProperty)
         cardinality (get-object :owl:maxCardinality)];
     (if (is-typed-as-object-property? rawProperty)
@@ -198,7 +197,7 @@
   ;{:pre [(spec/valid? ::owlspec/exactCardinality predicates)]}
   (let [get-object (curry-predicate-map predicates)
         onProperty (property/translate (get-object :owl:onProperty))
-        rawProperty (get-object :owl:onProperty) 
+        rawProperty (get-object :owl:onProperty)
         cardinality (get-object :owl:cardinality)];
     (if (is-typed-as-object-property? rawProperty)
       (vector "ObjectExactCardinality" cardinality onProperty)
@@ -225,7 +224,7 @@
   (let [get-object (curry-predicate-map predicates)
         arguments (translate (get-object :owl:intersectionOf))]
     (cond (or (some is-class-expression? arguments)
-            (is-typed-as-class? predicates)) (vec (cons "ObjectIntersectionOf" arguments))
+              (is-typed-as-class? predicates)) (vec (cons "ObjectIntersectionOf" arguments))
           (or (some typeInference/is-data-range-expression? arguments)
               (typeInference/is-typed-as-datatype? predicates)) (vec (cons "DataIntersectionOf" arguments))
           :else (vec (cons "IntersectionOf" arguments)))))
@@ -237,7 +236,7 @@
   (let [get-object (curry-predicate-map predicates)
         arguments (translate (get-object :owl:unionOf))]
     (cond (or (some is-class-expression? arguments)
-            (is-typed-as-class? predicates)) (vec (cons "ObjectUnionOf" arguments))
+              (is-typed-as-class? predicates)) (vec (cons "ObjectUnionOf" arguments))
           (or (some typeInference/is-data-range-expression? arguments)
               (typeInference/is-typed-as-datatype? predicates)) (vec (cons "DataUnionOf" arguments))
           :else (vec (cons "UnionOf" arguments)))))
@@ -257,9 +256,9 @@
   (let [get-object (curry-predicate-map predicates)
         argument (translate (get-object :owl:complementOf))]
     (cond (or (is-class-expression? argument)
-            (is-typed-as-class? predicates)) (vector "ObjectComplementOf" argument)
+              (is-typed-as-class? predicates)) (vector "ObjectComplementOf" argument)
           (or (typeInference/is-data-range-expression? argument)
-            (typeInference/is-typed-as-datatype? predicates)) (vector "DataComplementOf" argument)
+              (typeInference/is-typed-as-datatype? predicates)) (vector "DataComplementOf" argument)
           :else (vector "ComplementOf" argument))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -275,14 +274,14 @@
     (contains? predicates :owl:hasSelf) (translateHasSelfRestriction predicates)
     (contains? predicates :owl:minCardinality) (translateMinCardinalityRestriction predicates)
     (and (contains? predicates :owl:minQualifiedCardinality)
-         (contains? predicates :owl:onClass)) (translateMinQualifiedCardinalityRestriction predicates) 
+         (contains? predicates :owl:onClass)) (translateMinQualifiedCardinalityRestriction predicates)
     (and (contains? predicates :owl:minQualifiedCardinality)
-          (contains? predicates :owl:onDataRange)) (DTT/translateDatatypeMinQualifiedCardinality predicates)
+         (contains? predicates :owl:onDataRange)) (DTT/translateDatatypeMinQualifiedCardinality predicates)
     (contains? predicates :owl:maxCardinality) (translateMaxCardinalityRestriction predicates)
     (and (contains? predicates :owl:maxQualifiedCardinality)
-          (contains? predicates :owl:onClass)) (translateMaxQualifiedCardinalityRestriction predicates)
+         (contains? predicates :owl:onClass)) (translateMaxQualifiedCardinalityRestriction predicates)
     (and (contains? predicates :owl:maxQualifiedCardinality)
-          (contains? predicates :owl:onDataRange)) (DTT/translateDatatypeMaxQualifiedCardinality predicates)
+         (contains? predicates :owl:onDataRange)) (DTT/translateDatatypeMaxQualifiedCardinality predicates)
     (contains? predicates :owl:cardinality) (translateExactCardinalityRestriction predicates)
     (and (contains? predicates :owl:qualifiedCardinality)
          (contains? predicates :owl:onClass)) (translateExactQualifiedCardinalityRestriction predicates)

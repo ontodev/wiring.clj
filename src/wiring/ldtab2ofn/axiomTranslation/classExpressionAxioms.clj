@@ -2,8 +2,9 @@
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]
-            [cheshire.core :as cs] 
+            [cheshire.core :as cs]
             [clojure.edn :as edn]
+            [wiring.ldtab2ofn.annotationTranslation.translate :as ann]
             [wiring.ldtab2ofn.expressionTranslation.propertyTranslation :as propertyTranslation]
             [wiring.ldtab2ofn.expressionTranslation.classTranslation :as classTranslation]
             [wiring.ldtab2ofn.spec :as owlspec]))
@@ -20,7 +21,8 @@
   [predicates]
   ;{:pre [(spec/valid? ::owlspec/thickTriple predicates)]}
   (let [subclass (classTranslation/translate (:subject predicates))
-        superclass (classTranslation/translate (:object predicates))]
+        superclass (classTranslation/translate (:object predicates))
+        annotation (ann/translate (:annotation predicates))]
     (vector "SubClassOf" subclass superclass)))
 
 (defn translateDisjointUnionOf
@@ -72,6 +74,6 @@
       "owl:disjointUnionOf" (translateDisjointUnionOf predicateMap)
       "owl:equivalentClass" (translateEquivalentClasses predicateMap)
       "owl:AllDisjointClasses" (translateAllDisjointClasses predicateMap)
-      "owl:disjointWith" (translateDisjointWith predicateMap) 
+      "owl:disjointWith" (translateDisjointWith predicateMap)
 
       (str "Thin triple?" predicateMap))))

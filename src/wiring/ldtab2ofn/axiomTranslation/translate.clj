@@ -2,7 +2,7 @@
   (:require [clojure.repl :as repl]
             [clojure.string :as str]
             [clojure.spec.alpha :as spec]
-            [wiring.ldtab2ofn.expressionTranslation.propertyTranslation :as propertyTranslation] 
+            [wiring.ldtab2ofn.expressionTranslation.propertyTranslation :as propertyTranslation]
             [wiring.ldtab2ofn.typeInference :as typeInference]
             [wiring.ldtab2ofn.expressionTranslation.classTranslation :as CET]
             [wiring.ldtab2ofn.expressionTranslation.dataTypeTranslation :as DTT]
@@ -36,7 +36,7 @@
         superProperty (propertyTranslation/translate (:object predicates))]
     (if (or (typeInference/is-object-property-expression? subProperty)
             (typeInference/is-object-property-expression? superProperty))
-      (vector "ObjectSubPropertyOf" subProperty superProperty) 
+      (vector "ObjectSubPropertyOf" subProperty superProperty)
       (vector "SubPropertyOf" subProperty superProperty))))
 
 (defn translateDisjointProperties
@@ -57,7 +57,7 @@
         domain (CET/translate (:object predicates))]
     (if (typeInference/is-object-property-expression? property)
       (vector "PropertyDomain" property domain)
-      (vector "ObjectPropertyDomain" property domain)))) 
+      (vector "ObjectPropertyDomain" property domain))))
 
 (defn translateRange
   "Translate rdfs:domain"
@@ -66,13 +66,13 @@
         classRange (CET/translate (:object predicates));tentative translation
         dataRange (DTT/translate (:object predicates))];tentative translation
     (cond
-     (typeInference/is-class-expression? classRange) (vector "ObjectPropertyRange" property classRange)
-     (typeInference/is-data-range-expression? dataRange) (vector "DataPropertyRange" property dataRange)
-     (typeInference/is-ambiguous-expression? classRange) (vector "PropertyRange" property classRange)
-     (typeInference/is-ambiguous-expression? dataRange) (vector "PropertyRange" property dataRange)
-     :else (vector "PropertyRange" property (:object predicates)))))
+      (typeInference/is-class-expression? classRange) (vector "ObjectPropertyRange" property classRange)
+      (typeInference/is-data-range-expression? dataRange) (vector "DataPropertyRange" property dataRange)
+      (typeInference/is-ambiguous-expression? classRange) (vector "PropertyRange" property classRange)
+      (typeInference/is-ambiguous-expression? dataRange) (vector "PropertyRange" property dataRange)
+      :else (vector "PropertyRange" property (:object predicates)))))
 
-(defn translateAllDisjointProperties 
+(defn translateAllDisjointProperties
   "Translate owl:AllDisjointProperties"
   [predicates]
   (let [arguments (propertyTranslation/translateList (:owl:members (:object predicates)))]
@@ -112,12 +112,12 @@
         object (CET/translate (:object predicateMap))]
     (vector "ClassAssertion" subject object)))
 
-(defn translateSpecialCases 
+(defn translateSpecialCases
   [predicateMap]
   (let [object (:object predicateMap)]
     (if (map? object)
       (translateIndividualAssertion predicateMap)
-      (translateThinTriples predicateMap)))) 
+      (translateThinTriples predicateMap))))
 
 (defn translateType
   "Translate rdf:type for axioms"
@@ -151,15 +151,15 @@
       "owl:disjointUnionOf" (CEA/translateDisjointUnionOf predicateMap)
       "owl:equivalentClass" (CEA/translateEquivalentClasses predicateMap)
       "owl:AllDisjointClasses" (CEA/translateAllDisjointClasses predicateMap)
-      "owl:disjointWith" (CEA/translateDisjointWith predicateMap) 
+      "owl:disjointWith" (CEA/translateDisjointWith predicateMap)
 
       ;object property  axioms
       "owl:inverseOf" (OPA/translateInverseOf predicateMap)
       "owl:InverseFunctionalProperty" (OPA/translateInverseFunctionalProperty predicateMap)
-      "owl:ReflexiveProperty" (OPA/translateReflexiveProperty predicateMap) 
-      "owl:IrreflexiveProperty" (OPA/translateIrreflexiveProperty predicateMap) 
-      "owl:AsymmetricProperty" (OPA/translateAsymmetricProperty predicateMap) 
-      "owl:SymmetricProperty" (OPA/translateSymmetricProperty predicateMap) 
+      "owl:ReflexiveProperty" (OPA/translateReflexiveProperty predicateMap)
+      "owl:IrreflexiveProperty" (OPA/translateIrreflexiveProperty predicateMap)
+      "owl:AsymmetricProperty" (OPA/translateAsymmetricProperty predicateMap)
+      "owl:SymmetricProperty" (OPA/translateSymmetricProperty predicateMap)
       "owl:TransitiveProperty" (OPA/translateTransitiveProperty predicateMap)
       "owl:propertyChainAxiom" (OPA/translatePropertyChainAxiom predicateMap)
       "owl:equivalentProperty" (OPA/translateEquivalentProperty predicateMap) ;TODO this currently only translates to OFN S-expressions with 2 arguments - but this is an n-ary constructor

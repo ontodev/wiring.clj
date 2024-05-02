@@ -67,7 +67,7 @@
   "Translate owl:FunctionalProperty"
   [predicates]
   (let [property (propertyTranslation/translate (:subject predicates))]
-    (vector "FunctionalObjectProperty" property))) 
+    (vector "FunctionalObjectProperty" property)))
 
 (defn translateInverseFunctionalProperty
   "Translate owl:InverseFunctionalProperty"
@@ -103,9 +103,9 @@
   "Translate owl:TransitiveProperty"
   [predicates]
   (let [property (propertyTranslation/translate (:subject predicates))]
-    (vector "TransitiveObjectProperty" property))) 
+    (vector "TransitiveObjectProperty" property)))
 
-(defn translateAllDisjointProperties 
+(defn translateAllDisjointProperties
   "Translate owl:AllDisjointProperties"
   [predicates]
   (let [arguments (propertyTranslation/translateList (:owl:members (:object predicates)))]
@@ -128,11 +128,11 @@
   [predicateMap]
   (let [object (:object predicateMap)]
     (case object
-      "owl:InverseFunctionalProperty" (translateInverseFunctionalProperty predicateMap) 
-      "owl:ReflexiveProperty" (translateReflexiveProperty predicateMap) 
-      "owl:IrreflexiveProperty" (translateIrreflexiveProperty predicateMap) 
-      "owl:AsymmetricProperty" (translateAsymmetricProperty predicateMap) 
-      "owl:SymmetricProperty" (translateSymmetricProperty predicateMap) 
+      "owl:InverseFunctionalProperty" (translateInverseFunctionalProperty predicateMap)
+      "owl:ReflexiveProperty" (translateReflexiveProperty predicateMap)
+      "owl:IrreflexiveProperty" (translateIrreflexiveProperty predicateMap)
+      "owl:AsymmetricProperty" (translateAsymmetricProperty predicateMap)
+      "owl:SymmetricProperty" (translateSymmetricProperty predicateMap)
       "owl:TransitiveProperty" (translateTransitiveProperty predicateMap)
       "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
       "owl:AllDisjointProperties" (translateAllDisjointProperties predicateMap))))

@@ -11,11 +11,11 @@
   ([entity] ;this is expected to be OFN
    ;(if (map? entity);so it should never be a map
      ;(encode-entity entity (:datatype entity))
-     entity) 
+   entity)
   ([entity datatype];entity is OFN - datatype is from predicate map
    (cond
      (= datatype "_IRI") entity
-     (= datatype "_JSON") entity 
+     (= datatype "_JSON") entity
      (= datatype "_plain") entity
      (str/starts-with? datatype "@") (str "\"" entity "\"" datatype)
      :else (str "\"" entity "\"" "^^" datatype))))

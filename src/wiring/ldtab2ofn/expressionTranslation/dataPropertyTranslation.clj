@@ -1,4 +1,4 @@
-(ns wiring.ldtab2ofn.dataPropertyTranslation
+(ns wiring.ldtab2ofn.expressionTranslation.dataPropertyTranslation
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]

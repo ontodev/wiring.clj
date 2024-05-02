@@ -2,7 +2,7 @@
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [cheshire.core :as cs]
-            [clojure.spec.alpha :as spec] 
+            [clojure.spec.alpha :as spec]
             [clojure.java.jdbc :as jdbc];THIS IS NOW A DEPENDENCY ON WIRING
             [wiring.ldtab2ofn.spec :as owlspec]))
 
@@ -23,32 +23,29 @@
    :post [(spec/valid? ::owlspec/map %)]}
   (let [removedObject (s/replace predicateMap #"\[\{\"object\":" "") ;TODO that doesn't work no more...
         removedClosingBracket (s/replace removedObject  #"\}\]" "")
-        namespacePrefixes (handleNamespaces removedClosingBracket) 
+        namespacePrefixes (handleNamespaces removedClosingBracket)
         predicates (cs/parse-string namespacePrefixes  true)]
     predicates))
 
 (defn load-db
   [path]
   {:classname "org.sqlite.JDBC"
-  :subprotocol "sqlite"
-  :subname path})
+   :subprotocol "sqlite"
+   :subname path})
 
 (defn ldtab-json-parse
   [string]
   (try (cs/parse-string string true)
        (catch Exception e string)))
 
-
 (defn parse-sql-thick-triple
-  [thick] 
+  [thick]
   (-> thick
-    (update :subject #(ldtab-json-parse %))
-    (update :predicate #(ldtab-json-parse %))
-    (update :object #(ldtab-json-parse %))
-    (update :datatype #(ldtab-json-parse %))
-    (update :annotation #(ldtab-json-parse %))))
-
-
+      (update :subject #(ldtab-json-parse %))
+      (update :predicate #(ldtab-json-parse %))
+      (update :object #(ldtab-json-parse %))
+      (update :datatype #(ldtab-json-parse %))
+      (update :annotation #(ldtab-json-parse %))))
 
 (defn get-triples-of
   [subject path-to-database]

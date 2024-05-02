@@ -4,12 +4,13 @@
             [clojure.spec.alpha :as spec]
             [wiring.ldtab2ofn.expressionTranslation.classTranslation :as CET]
             [wiring.ldtab2ofn.expressionTranslation.dataPropertyTranslation :as DPT]
+            [wiring.ldtab2ofn.expressionTranslation.dataTypeTranslation :as DTT]
             [wiring.ldtab2ofn.util :as util]
             [wiring.ldtab2ofn.spec :as owlspec]))
 
 ;TODO data validation
 
-(declare translate) 
+(declare translate)
 
 (defn translateList
   "Translate an RDF list."
@@ -25,7 +26,7 @@
 (defn translateSubDataPropertyOf
   "Translate subPropertyOf"
   [predicates]
-  (let [subProperty (DPT/translate (:subject predicates)) 
+  (let [subProperty (DPT/translate (:subject predicates))
         superProperty (DPT/translate (:object predicates))]
     (vector "SubDataPropertyOf" subProperty superProperty)))
 
@@ -56,17 +57,17 @@
   (let [property (DPT/translate (:subject predicates))]
     (vector "FunctionalDataProperty" property)))
 
-(defn translateAllDisjointProperties 
+(defn translateAllDisjointProperties
   "Translate owl:AllDisjointProperties"
   [predicates]
-  (let [arguments (DPT/translateList (:owl:members (:object predicates)))]
+  (let [arguments (translateList (:owl:members (:object predicates)))]
     (vec (cons "DisjointDataProperties" arguments))))
 
 (defn translateType
   "Translate rdf:type for axioms"
   [predicateMap]
   (let [object (:object predicateMap)]
-    (case object 
+    (case object
       "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
       "owl:AllDisjointProperties" (translateAllDisjointProperties predicateMap))))
 
@@ -74,7 +75,7 @@
   "Translate predicate map to OFS."
   [predicateMap]
   (let [p (:predicate predicateMap)];
-    (case p 
+    (case p
       "owl:propertyDisjointWith" (translateDisjointProperties predicateMap)
       "rdfs:domain" (translateDomain predicateMap)
       "rdfs:range" (translateRange predicateMap)
