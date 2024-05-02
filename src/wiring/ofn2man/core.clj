@@ -38,7 +38,7 @@
 
   (println (axiomTranslation/translate (cs/parse-string subclassOf)))
   (println (axiomTranslation/translate (cs/parse-string nesting)))
-  (println (axiomTranslation/translate (cs/parse-string hasVaue))) 
+  (println (axiomTranslation/translate (cs/parse-string hasVaue)))
   (println (axiomTranslation/translate (cs/parse-string minCard)))
   (println (axiomTranslation/translate (cs/parse-string minQualifiedCard)))
   (println (axiomTranslation/translate (cs/parse-string maxCard)))
@@ -50,5 +50,4 @@
   (println (axiomTranslation/translate (cs/parse-string complemen)))
   (println (axiomTranslation/translate (cs/parse-string disjointClasses)))
   (println (axiomTranslation/translate (cs/parse-string disjointUnion)))
-  (println (axiomTranslation/translate (cs/parse-string equivalentClasses)))
-  )
+  (println (axiomTranslation/translate (cs/parse-string equivalentClasses))))
