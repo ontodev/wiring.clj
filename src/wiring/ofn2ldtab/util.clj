@@ -3,10 +3,9 @@
             [clojure.string :as s]
             [clojure.spec.alpha :as spec]))
 
-
 (defn get-datetype
   [input]
-  (cond 
+  (cond
     (coll? input) "JSON"
     (re-matches #"^\"(.+)\"(.*)$" input) "LITERAL"
     (re-matches #"^<(.+)>$" input) "URI"
@@ -37,7 +36,6 @@
       datatype datatype
       :else "_plain")))
 
-
 (defn translate-datatype
   [string]
   (let [datatype (get-datetype string)]
@@ -50,6 +48,8 @@
 
 
 ;TODO
+
+
 (defn jsonFormat
   "Serialises a list of entities into a valid OFN-S expression."
   [& args]

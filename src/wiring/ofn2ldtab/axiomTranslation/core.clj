@@ -9,23 +9,19 @@
 
 (defn -main
   "Currently only used for manual testing."
-  [& args] 
-    (with-open [rdr (io/reader (io/resource "tests/thickOBO.txt"))]
-      (doseq [line (line-seq rdr)]
+  [& args]
+  (with-open [rdr (io/reader (io/resource "tests/thickOBO.txt"))]
+    (doseq [line (line-seq rdr)]
         ;(println "Input: " line)
         ;(println "OFN: " (cs/generate-string (t/translate (cs/parse-string line true))))
-        (def ofn (cs/generate-string (t/translate (p/parse line))))
+      (def ofn (cs/generate-string (t/translate (p/parse line))))
         ;(println "OFN: " ofn)
-        (def orig (axiomTranslation/translate (cs/parse-string ofn)))
+      (def orig (axiomTranslation/translate (cs/parse-string ofn)))
         ;(println "Orig: " orig)
 
-        (if (= (cs/parse-string line true) orig)
-          (print "")
-          (println line "\n" ofn "\n" orig))
-
-
-
-        )))
+      (if (= (cs/parse-string line true) orig)
+        (print "")
+        (println line "\n" ofn "\n" orig)))))
         ;(is (thick-ofn-thick-round-trip line)))))
 
   ;(def subclassOf "[\"SubClassOf\",\"ex:A\",\"ex:B\"]")

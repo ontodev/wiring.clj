@@ -28,12 +28,12 @@
   [ofn]
   (if (has-annotation ofn)
     (strip-annotation ofn)
-    ofn)) 
+    ofn))
 
 (defn is-literal
   [input]
   (let [match (re-matches #"^\"(.+)\"(.*)$" input)]
-    (if match 
+    (if match
       (second match)
       nil)))
 
@@ -47,12 +47,12 @@
 
 (defn encode-annotation-value
   [value]
-  (let [literal (is-literal value) 
+  (let [literal (is-literal value)
         datatype (has-datatype value)
         language (has-language-tag value)]
     (cond
       ;TODO we ignore anonymous individuals here (but they would be typed as "_JSON" unless we skolemise them)
-      (not literal) 
+      (not literal)
       {"object" value
        "datatype" "_IRI"
        "meta" "Annotation"}
@@ -64,7 +64,7 @@
       {"object" literal
        "datatype" (str "@" language)
        "meta" "Annotation"}
-      :else 
+      :else
       {"object" literal
        "datatype" "_plain"
        "meta" "Annotation"})))

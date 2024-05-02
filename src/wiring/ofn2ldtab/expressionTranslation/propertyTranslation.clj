@@ -11,7 +11,7 @@
 
 (defn translate-object
   [object]
-  [{:object (translate object) :datatype (u/translate-datatype object)}]) 
+  [{:object (translate object) :datatype (u/translate-datatype object)}])
 
 (defn translateList
   "Translate property expressions into an RDF list"
@@ -35,7 +35,7 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/inverseOf ofn)]}
   (let [[op arg] ofn
-        triple {:owl:inverseOf [{:object (translate arg) }]}]
+        triple {:owl:inverseOf [{:object (translate arg)}]}]
     triple))
 
 (defn translate
@@ -46,4 +46,4 @@
     (translateInverseOf ofn)
     (= "ObjectPropertyChain" (first ofn))
     (translatePropertyChain ofn)
-    :else ofn)) 
+    :else ofn))

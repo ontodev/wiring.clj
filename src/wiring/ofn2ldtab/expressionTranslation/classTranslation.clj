@@ -12,7 +12,7 @@
 
 (defn translate-object
   [object]
-  [{:object (translate object) :datatype (u/translate-datatype object)}]) 
+  [{:object (translate object) :datatype (u/translate-datatype object)}])
 
 (defn translateList
   "Translate class expressions into an RDF list"
@@ -24,7 +24,7 @@
       out
       (recur (rest in)
              {:rdf:first (translate-object (first in))
-              :rdf:rest (translate-object out)})))) 
+              :rdf:rest (translate-object out)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      Restrictions
@@ -46,7 +46,7 @@
   {:pre [(spec/valid? ::owlspec/allValuesFrom ofn)]}
   (let [[op property filler] ofn
         triple {:owl:allValuesFrom (translate-object filler)
-                :owl:onProperty (translate-object property) 
+                :owl:onProperty (translate-object property)
                 :rdf:type (translate-object "owl:Restriction")}]
     triple))
 
@@ -68,7 +68,7 @@
         ;TODO test use of 'translate-object' for "true^^xsd:boolean"
         triple {:owl:hasSelf (translate-object "true^^xsd:boolean")
                 :owl:onProperty (translate-object property)
-                :rdf:type (translate-object "owl:Restriction") }]
+                :rdf:type (translate-object "owl:Restriction")}]
     triple))
 
 (defn translateObjectMinUnqualifiedCardinality
@@ -76,7 +76,7 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/minCardinality ofn)]}
   (let [[op cardinality property] ofn
-        triple {:owl:minCardinality (translate-object (str cardinality "^^xsd:nonNegativeInteger") )
+        triple {:owl:minCardinality (translate-object (str cardinality "^^xsd:nonNegativeInteger"))
                 :owl:onProperty (translate-object property)
                 :rdf:type (translate-object "owl:Restriction")}]
     triple))
@@ -89,7 +89,7 @@
         triple {:owl:minQualifiedCardinality (translate-object (str cardinality "^^xsd:nonNegativeInteger"))
                 :owl:onProperty (translate-object property)
                 :owl:onClass (translate-object filler)
-                :rdf:type (translate-object "owl:Restriction") }]
+                :rdf:type (translate-object "owl:Restriction")}]
     triple))
 
 (defn translateObjectMinCardinality
@@ -116,7 +116,7 @@
   (let [[op cardinality property filler] ofn
         triple {:owl:maxQualifiedCardinality (translate-object (str cardinality "^^xsd:nonNegativeInteger"))
                 :owl:onProperty (translate-object property)
-                :owl:onClass (translate-object filler) 
+                :owl:onClass (translate-object filler)
                 :rdf:type (translate-object "owl:Restriction")}]
     triple))
 
@@ -146,7 +146,7 @@
                 :owl:onProperty (translate-object (property/translate property))
                 :owl:onClass (translate-object (translate filler))
                 :rdf:type (translate-object "owl:Restriction")}]
-    triple)) 
+    triple))
 
 (defn translateObjectExactCardinality
   "Translate a ObjectExactCardinality expression"
@@ -166,7 +166,7 @@
   (let [[operator & arguments] ofn
         triple {:owl:intersectionOf (translate-object (translateList arguments))
                 :rdf:type (translate-object "owl:Class")}]
-    triple)) 
+    triple))
 
 (defn translateObjectUnion
   "Translate an ObjectIntersectionOf expression"
@@ -174,7 +174,7 @@
   {:pre [(spec/valid? ::owlspec/classUnion ofn)]}
   (let [[operator & arguments] ofn
         triple {:owl:unionOf (translate-object (translateList arguments))
-                :rdf:type (translate-object "owl:Class") }]
+                :rdf:type (translate-object "owl:Class")}]
     triple))
 
 (defn translateObjectOneOf
@@ -200,7 +200,7 @@
   [ofn]
   {:pre [(spec/valid? ::owlspec/inverseOf ofn)]}
   (let [[op arg] ofn
-        triple {:owl:inverseOf (translate-object arg) }]
+        triple {:owl:inverseOf (translate-object arg)}]
     triple))
 
 (defn translate-string
