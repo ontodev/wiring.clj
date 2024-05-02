@@ -15,17 +15,17 @@
 
 (defn -main
   "Currently only used for manual testing."
-  [& args] 
+  [& args]
 
   ;translate ontology given via thick triples into OFN-S expressions
   (def ofnExpressions (->> "tests/thickOBO.txt"
-       io/resource
-       io/reader 
-       line-seq
-       (map p/parse)
-       (map thick2ofn/translate)))
+                           io/resource
+                           io/reader
+                           line-seq
+                           (map p/parse)
+                           (map thick2ofn/translate)))
 
   ;(def ofnExpressions (l/loadOntology "testPath")) 
 
   (def labelling (labelHandling/inlineLabels ofnExpressions))
-  (println labelling)) 
+  (println labelling))
