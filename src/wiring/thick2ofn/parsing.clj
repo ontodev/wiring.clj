@@ -21,6 +21,6 @@
    :post [(spec/valid? ::owlspec/map %)]}
   (let [removedObject (s/replace predicateMap #"\[\{\"object\":" "")
         removedClosingBracket (s/replace removedObject  #"\}\]" "")
-        namespacePrefixes (handleNamespaces removedClosingBracket) 
+        namespacePrefixes (handleNamespaces removedClosingBracket)
         predicates (cs/parse-string namespacePrefixes  true)]
     predicates))

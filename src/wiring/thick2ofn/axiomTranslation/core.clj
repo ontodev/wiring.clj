@@ -11,9 +11,12 @@
   "Currently only used for manual testing."
   [& args]
 
-  (with-open [rdr (io/reader (io/resource "tests/thickOBO.txt"))]
-    (doseq [line (line-seq rdr)] 
+  (with-open [rdr (io/reader (io/resource "tests/check.txt"))]
+  ;(with-open [rdr (io/reader (io/resource "tests/thickOBO.txt"))]
+  ;(with-open [rdr (io/reader (io/resource "tests/thickClassExpressions.txt"))]
+    (doseq [line (line-seq rdr)]
       (println (str "Input: " line))
-      (println (str "Output: " (cs/generate-string (t/translate (p/parse line)))))
+      (def ofn (cs/generate-string (t/translate (p/parse line))))
+      (println (str "Output: " ofn))
       (println ""))))
 

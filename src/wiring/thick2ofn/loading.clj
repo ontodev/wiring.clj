@@ -9,7 +9,7 @@
   collection of OFN-S expressions"
   [path]
   (->> path
-       io/reader 
+       io/reader
        line-seq
        (map p/parse)
        (map thick2ofn/translate)))

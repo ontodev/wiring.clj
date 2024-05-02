@@ -2,14 +2,15 @@
   (:require [clojure.repl :as repl]
             [clojure.string :as s]
             [wiring.thick2ofn.expressionTranslation.classTranslation :as CET]
-            [wiring.thick2ofn.expressionTranslation.dataPropertyTranslation :as DPT]
+            ;[wiring.thick2ofn.expressionTranslation.dataPropertyTranslation :as DPT]
+            [wiring.thick2ofn.expressionTranslation.dataTypeTranslation :as DTT]
             [clojure.spec.alpha :as spec]
             [wiring.thick2ofn.util :as util]
             [wiring.thick2ofn.spec :as owlspec]))
 
 ;TODO data validation
 
-(declare translate) 
+(declare translate)
 
 (defn translateList
   "Translate an RDF list."
@@ -25,48 +26,48 @@
 (defn translateSubDataPropertyOf
   "Translate subPropertyOf"
   [predicates]
-  (let [subProperty (DPT/translate (:subject predicates)) 
-        superProperty (DPT/translate (:object predicates))]
+  (let [subProperty (translate (:subject predicates))
+        superProperty (translate (:object predicates))]
     (vector "SubDataPropertyOf" subProperty superProperty)))
 
 (defn translateDisjointProperties
   "Translate propertyDisjointWith"
   [predicates]
-  (let [lhs (DPT/translate (:subject predicates))
-        rhs (DPT/translate (:object predicates))]
+  (let [lhs (translate (:subject predicates))
+        rhs (translate (:object predicates))]
     (vector "DisjointDataProperties" lhs rhs)))
 
 (defn translateDomain
   "Translate rdfs:domain"
   [predicates]
-  (let [property (DPT/translate (:subject predicates))
+  (let [property (translate (:subject predicates))
         domain (CET/translate (:object predicates))]
     (vector "DataPropertyDomain" property domain)))
 
 (defn translateRange
   "Translate rdfs:range"
   [predicates]
-  (let [property (DPT/translate (:subject predicates))
+  (let [property (translate (:subject predicates))
         rangeClass (DTT/translate (:object predicates))]
     (vector "DataPropertyRange" property rangeClass)))
 
 (defn translateFunctionalProperty
   "Translate owl:FunctionalProperty"
   [predicates]
-  (let [property (DPT/translate (:subject predicates))]
+  (let [property (translate (:subject predicates))]
     (vector "FunctionalDataProperty" property)))
 
-(defn translateAllDisjointProperties 
+(defn translateAllDisjointProperties
   "Translate owl:AllDisjointProperties"
   [predicates]
-  (let [arguments (DPT/translateList (:owl:members (:object predicates)))]
+  (let [arguments (translateList (:owl:members (:object predicates)))]
     (vec (cons "DisjointDataProperties" arguments))))
 
 (defn translateType
   "Translate rdf:type for axioms"
   [predicateMap]
   (let [object (:object predicateMap)]
-    (case object 
+    (case object
       "owl:FunctionalProperty" (translateFunctionalProperty predicateMap)
       "owl:AllDisjointProperties" (translateAllDisjointProperties predicateMap))))
 
@@ -74,7 +75,7 @@
   "Translate predicate map to OFS."
   [predicateMap]
   (let [p (:predicate predicateMap)];
-    (case p 
+    (case p
       "owl:propertyDisjointWith" (translateDisjointProperties predicateMap)
       "rdfs:domain" (translateDomain predicateMap)
       "rdfs:range" (translateRange predicateMap)

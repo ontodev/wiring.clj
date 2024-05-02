@@ -68,6 +68,6 @@
       "owl:disjointUnionOf" (translateDisjointUnionOf predicateMap)
       "owl:equivalentClass" (translateEquivalentClasses predicateMap)
       "owl:AllDisjointClasses" (translateAllDisjointClasses predicateMap)
-      "owl:disjointWith" (translateDisjointWith predicateMap) 
+      "owl:disjointWith" (translateDisjointWith predicateMap)
 
       (str "Thin triple?" predicateMap))))
