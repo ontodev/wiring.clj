@@ -5,8 +5,8 @@
             [wiring.thick2ofn.parsing :as p]
             [wiring.typing.typeHandling :as typeHandling]
             [wiring.labelling.labelHandling :as labelHandling]
-            [wiring.thick2ofn.axiomTranslation.translate :as thick2ofn] 
-            [hiccup.core :as hicc] 
+            [wiring.thick2ofn.axiomTranslation.translate :as thick2ofn]
+            [hiccup.core :as hicc]
             [cheshire.core :as cs]
             [clojure.java.io :as io])
   (:gen-class))
@@ -26,8 +26,8 @@
   (with-open [rdr (io/reader (io/resource "tests/thickOBO.txt"))]
     (doseq [line (line-seq rdr)]
       ;building the type map
-      (if (thickTriples/typingTriple? (p/parse line)) 
-       (def subject2types (thickTriples/updateSubject2info subject2types (p/parse line))))
+      (if (thickTriples/typingTriple? (p/parse line))
+        (def subject2types (thickTriples/updateSubject2info subject2types (p/parse line))))
 
       ;collect thick triples
       (if (and (thickTriples/thickTriple? (p/parse line))
@@ -47,7 +47,7 @@
 
       ;collect labeling triples
       (if (thickTriples/labelingTriple? (p/parse line))
-       (def subject2labels (thickTriples/updateSubject2info subject2labels (p/parse line)))))) 
+        (def subject2labels (thickTriples/updateSubject2info subject2labels (p/parse line))))))
 
   ;translate all JSON thick triples to (abstract) OFN-S expressions
   ;(def ofnExpressions (map thick2ofn/translate thickTriples))
@@ -62,7 +62,7 @@
   (def typedExpressions (map #(typeHandling/translate % subject2types) ofnExpressions))
 
   ;label handling
-  (def labelSubstitution (map #(labelHandling/translate % subject2labels) typedExpressions)) 
+  (def labelSubstitution (map #(labelHandling/translate % subject2labels) typedExpressions))
 
   ;rdfa
   (def rdfaExpressions (map #(axiomTranslation/translate % subject2labels) typedExpressions))
@@ -80,7 +80,5 @@
   (doseq [item rdfaExpressions]
     (println "===")
     (println item)
-    (println (hicc/html item))) 
-    (println "===")
-
-  )
+    (println (hicc/html item)))
+  (println "==="))
